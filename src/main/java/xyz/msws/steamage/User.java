@@ -1,14 +1,7 @@
 package xyz.msws.steamage;
 
-import com.lukaspradel.steamapi.webapi.client.SteamWebApiClient;
-
 public class User implements Comparable<User> {
-
-    private static SteamWebApiClient client;
-
-    static {
-        client = new SteamWebApiClient.SteamWebApiClientBuilder("0E11F62B4FE1BADE8D337FC7009A130C").build();
-    }
+    
 
     private String name, steamId;
     private int userId;
