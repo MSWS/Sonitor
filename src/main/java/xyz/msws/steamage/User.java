@@ -1,39 +1,38 @@
 package xyz.msws.steamage;
 
 public class User implements Comparable<User> {
-    
 
-    private String name, steamId;
+    private String serverName, steamId;
     private int userId;
     private long steamCom, date = -1;
+    private boolean isEstimate = false;
 
-
-    public User(int userid, String name, long steam) {
+    public User(int userid, String serverName, long steam) {
         this.userId = userid;
-        this.name = name;
+        this.serverName = serverName;
         this.steamCom = steam;
         this.steamId = Convert.communityToSteam(steam);
     }
 
-    public User(int userid, String name, String steam) {
-        this(userid, name, Convert.steamToCommunity(steam));
+    public User(int userid, String serverName, String steam) {
+        this(userid, serverName, Convert.steamToCommunity(steam));
         this.steamId = steam;
     }
 
-    public User(String userid, String name, String steam) {
-        this(Integer.parseInt(userid), name, steam);
+    public User(String userid, String serverName, String steam) {
+        this(Integer.parseInt(userid), serverName, steam);
     }
 
     public long getCommunityID() {
         return steamCom;
     }
 
-    public String getName() {
-        return name;
+    public String getServerName() {
+        return serverName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     public int getUserId() {
@@ -41,11 +40,24 @@ public class User implements Comparable<User> {
     }
 
     public void setDate(long date) {
+        setDate(date, false);
+    }
+
+    public void setDate(long date, boolean estimate) {
         this.date = date;
+        this.isEstimate = estimate;
     }
 
     public long getDate() {
         return date;
+    }
+
+    public void setEstimate(boolean est) {
+        this.isEstimate = est;
+    }
+
+    public boolean isEstimate(){
+        return isEstimate;
     }
 
     public String getSteamId() {

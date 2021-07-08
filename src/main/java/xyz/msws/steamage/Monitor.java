@@ -22,7 +22,7 @@ public class Monitor {
     private String outputPath = null, apiKey = null, clonePath = null;
 
     private long rate = 5000;
-    private boolean cache = true, persist = true;
+    private boolean cache = true, persistGuesses = true, persist = true;
     private String header = "";
 
     private List<User> users = new ArrayList<>(), unknown = new ArrayList<>();
@@ -93,10 +93,16 @@ public class Monitor {
                 write.write("rate=5000\n");
                 write.write("\n");
                 write.write("The header is printed after each status output in console, useful for distinguishing outputs\n");
-                write.write("header={}{}{}{}=================================");
+                write.write("header={}{}{}{}=================================\n");
+                write.write("\n");
+                write.write("Some profiles have their visibility set to private, this application guesstimates based off other accounts that were made immediately before/after\n");
+                write.write("If false, we will try to fetch, if true, we will save the estimated guess\n");
+                write.write("persistGuessses=true\n");
+                write.write("\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            System.out.println("Created settings.txt located at " + settings.getAbsolutePath());
         }
         sets = readFile(settings);
         for (String line : sets.split("\n")) {
@@ -112,8 +118,11 @@ public class Monitor {
                 clonePath = line.substring("clonePath=".length());
             } else if (line.startsWith("rate=")) {
                 rate = Long.parseLong(line.substring("rate=".length()));
-            } else if (line.startsWith("header="))
+            } else if (line.startsWith("header=")) {
                 header = line.substring("header=".length());
+            } else if (line.startsWith("persistGuesses=")) {
+                persistGuesses = Boolean.parseBoolean(line.substring("persistGuesses=".length()));
+            }
         }
 
         client = new SteamWebApiClient.SteamWebApiClientBuilder(apiKey).build();
@@ -182,9 +191,8 @@ public class Monitor {
 
             if (persist)
                 try (FileWriter writer = new FileWriter(cacheFile)) {
-                    for (Map.Entry<Long, Long> entry : userCache.entrySet()) {
+                    for (Map.Entry<Long, Long> entry : userCache.entrySet())
                         writer.write(String.format("%d:%d\n", entry.getKey(), entry.getValue()));
-                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -192,7 +200,7 @@ public class Monitor {
             if (header != null)
                 Arrays.stream(header.split("\\{}")).forEach(System.out::println);
             for (User user : users)
-                System.out.printf("#%d %s: %s\n", user.getUserId(), user.getName(), Convert.timeToStr(System.currentTimeMillis() - user.getDate()));
+                System.out.printf("#%d %s: %s\n", user.getUserId(), user.getServerName(), (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate()));
             return;
         }
 
@@ -207,8 +215,9 @@ public class Monitor {
             return;
         String name = line.substring(line.indexOf("\"") + 1, line.indexOf("\"", line.indexOf("\"") + 1));
         User user = new User(parts[1], name, id);
-        if (userCache.containsKey(user.getCommunityID()) && cache) {
-            user.setDate(userCache.get(user.getCommunityID()));
+        if (cache && userCache.containsKey(user.getCommunityID())) {
+            long time = userCache.get(user.getCommunityID());
+            user.setDate(Math.abs(time), time < 0);
             users.add(user);
         } else {
             unknown.add(user);
@@ -234,11 +243,10 @@ public class Monitor {
                 System.out.printf("ERROR: Unable to get steam age of %s", p.getPersonaname());
                 continue;
             }
-            if (currentDiff > 0)
-                user.setName("*" + user.getName());
-            else
-                userCache.put(user.getCommunityID(), p.getTimecreated().longValue());
-            user.setDate(p.getTimecreated() * 1000L);
+            if (currentDiff == 0 || persistGuesses)
+                userCache.put(user.getCommunityID(), (currentDiff == 0 ? p.getTimecreated().longValue() : -p.getTimecreated().longValue()) * 1000L);
+
+            user.setDate(p.getTimecreated() * 1000L, currentDiff != 0);
             users.add(user);
         }
     }
@@ -249,7 +257,6 @@ public class Monitor {
             User u = it.next();
             if (u.getDate() == -1)
                 continue;
-            userCache.put(u.getCommunityID(), u.getDate());
             it.remove();
         }
     }
