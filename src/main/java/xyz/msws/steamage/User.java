@@ -56,7 +56,7 @@ public class User implements Comparable<User> {
         this.isEstimate = est;
     }
 
-    public boolean isEstimate(){
+    public boolean isEstimate() {
         return isEstimate;
     }
 

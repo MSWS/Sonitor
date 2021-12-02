@@ -7,23 +7,26 @@ import com.lukaspradel.steamapi.webapi.client.SteamWebApiClient;
 import com.lukaspradel.steamapi.webapi.request.SteamWebApiRequest;
 import com.lukaspradel.steamapi.webapi.request.builders.SteamWebApiRequestFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static xyz.msws.steamage.FileUtils.readFile;
+
 public class Monitor {
+    private final Map<String, String> nameCache = new HashMap<>();
     private final Map<Long, Long> userCache = new HashMap<>();
-    private File master = new File(System.getProperty("user.dir"));
-    private File cacheFile = new File(master, "cache.txt");
-    private File settings = new File(master, "settings.txt");
+
+    private final File master = new File(System.getProperty("user.dir"));
+    private final File cacheFile = new File(master, "cache.txt");
+    private final File settings = new File(master, "settings.txt");
     private File output, clone;
     private SteamWebApiClient client;
+    long lastStatus = -1;
 
-    private String outputPath = null, apiKey = null, clonePath = null;
-
-    private long rate = 5000;
-    private boolean cache = true, persistGuesses = true, persist = true;
-    private String header = "";
+    private Config config;
 
     private List<User> users = new ArrayList<>(), unknown = new ArrayList<>();
 
@@ -54,7 +57,7 @@ public class Monitor {
             }
 
             try {
-                Thread.sleep(rate);
+                Thread.sleep(config.getRate());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -69,65 +72,10 @@ public class Monitor {
             e.printStackTrace();
         }
 
-        String sets = readFile(settings);
+        config = new FileConfig(settings);
+        client = new SteamWebApiClient.SteamWebApiClientBuilder(config.getApiKey()).build();
 
-        if (sets.isEmpty()) {
-            try (FileWriter write = new FileWriter(settings)) {
-                write.write("This is where the output file from CS:GO is located\n");
-                write.write("directory=C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log\n");
-                write.write("\n");
-                write.write("This is your steam API Key, open the link if you do not know where to get it\n");
-                write.write("steamkey=https://steamcommunity.com/dev/apikey\n");
-                write.write("\n");
-                write.write("If true, we will cache the results during runtime, reducing API calls (RECOMMENDED TRUE)\n");
-                write.write("cache=true\n");
-                write.write("\n");
-                write.write("If true, we will save the results over multiple executions, reducing API calls (RECOMMENDED TRUE)\n");
-                write.write("persist=true\n");
-                write.write("\n");
-                write.write("If you want to save logs to another file, specify the path here\n");
-                write.write("clonePath=\n");
-                write.write("\n");
-                write.write("Rate determines how often the output file is scanned, lower = less latency, but may consume more resources\n");
-                write.write("Numbers are in milliseconds, 1000 ms = 1 second\n");
-                write.write("rate=5000\n");
-                write.write("\n");
-                write.write("The header is printed after each status output in console, useful for distinguishing outputs\n");
-                write.write("header={}{}{}{}=================================\n");
-                write.write("\n");
-                write.write("Some profiles have their visibility set to private, this application guesstimates based off other accounts that were made immediately before/after\n");
-                write.write("If false, we will try to fetch, if true, we will save the estimated guess\n");
-                write.write("persistGuessses=true\n");
-                write.write("\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println("Created settings.txt located at " + settings.getAbsolutePath());
-        }
-        sets = readFile(settings);
-        for (String line : sets.split("\n")) {
-            if (line.startsWith("directory=")) {
-                outputPath = line.substring("directory=".length());
-            } else if (line.startsWith("steamkey=")) {
-                apiKey = line.substring("steamkey=".length());
-            } else if (line.startsWith("cache=")) {
-                cache = Boolean.parseBoolean(line.substring("cache=".length()));
-            } else if (line.startsWith("persist=")) {
-                persist = Boolean.parseBoolean(line.substring("persist=".length()));
-            } else if (line.startsWith("clonePath=")) {
-                clonePath = line.substring("clonePath=".length());
-            } else if (line.startsWith("rate=")) {
-                rate = Long.parseLong(line.substring("rate=".length()));
-            } else if (line.startsWith("header=")) {
-                header = line.substring("header=".length());
-            } else if (line.startsWith("persistGuesses=")) {
-                persistGuesses = Boolean.parseBoolean(line.substring("persistGuesses=".length()));
-            }
-        }
-
-        client = new SteamWebApiClient.SteamWebApiClientBuilder(apiKey).build();
-
-        if (persist) {
+        if (config.persistKnowns()) {
             String[] lines = Objects.requireNonNull(readFile(cacheFile)).split("\n");
             for (String line : lines) {
                 if (line == null || !line.contains(":"))
@@ -136,15 +84,15 @@ public class Monitor {
             }
         }
 
-        if (outputPath == null) {
+        if (config.getOutputPath() == null) {
             System.out.println("No path has been specified in the settings.txt");
             return false;
         }
 
-        output = new File(outputPath);
+        output = new File(config.getOutputPath());
 
         if (!output.exists()) {
-            output = new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo", outputPath.isEmpty() ? "output.log" : outputPath);
+            output = new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo", config.getOutputPath().isEmpty() ? "output.log" : config.getOutputPath());
             if (!output.exists()) {
                 System.out.println(output.getAbsolutePath() + " was not found!");
                 System.out.println("Please make sure you have con_logfile enabled");
@@ -155,41 +103,31 @@ public class Monitor {
             }
         }
 
-        if (clonePath != null && !clonePath.isEmpty())
-            clone = new File(clonePath);
+        if (config.getClonePath() != null && !config.getClonePath().isEmpty())
+            clone = new File(config.getClonePath());
         return true;
     }
 
-    private String readFile(File f) {
-        if (f == null || !f.exists())
-            return null;
-        try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(f))) {
-            return new String(in.readAllBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private void parse(String line) {
-        if (!line.startsWith("#"))
-            return;
         if (line.contains("# userid name uniqueid connected ping loss state rate")) {
             users = new ArrayList<>();
             unknown = new ArrayList<>();
+            lastStatus = System.currentTimeMillis();
             return;
         }
-        if (line.contains("#end")) {
+        if (line.contains("#end") || (lastStatus != -1 && System.currentTimeMillis() - lastStatus > config.getTimeout())) {
+            lastStatus = -1;
+            // Sometimes CS doesn't print the #end at the end
             int offset = 0;
             while (!unknown.isEmpty()) {
                 GetPlayerSummaries response = getUserSummaries(unknown, offset);
                 List<Player> players = response.getResponse().getPlayers();
                 processPlayers(players);
-                removeKnownNames();
+                removeKnownNames(unknown.iterator());
                 offset++;
             }
 
-            if (persist)
+            if (config.persistKnowns())
                 try (FileWriter writer = new FileWriter(cacheFile)) {
                     for (Map.Entry<Long, Long> entry : userCache.entrySet())
                         writer.write(String.format("%d:%d\n", entry.getKey(), entry.getValue()));
@@ -197,13 +135,29 @@ public class Monitor {
                     e.printStackTrace();
                 }
             Collections.sort(users);
-            if (header != null)
-                Arrays.stream(header.split("\\{}")).forEach(System.out::println);
-            for (User user : users)
+            if (config.getHeader() != null)
+                Arrays.stream(config.getHeader().split("\\{}")).forEach(System.out::println);
+            List<String> changes = new ArrayList<>();
+            for (User user : users) {
                 System.out.printf("#%d %s: %s\n", user.getUserId(), user.getServerName(), (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate()));
+                if (config.warnNameChanges()) {
+                    String currentName = user.getServerName();
+                    nameCache.putIfAbsent(user.getSteamId(), currentName);
+                    String oldName = nameCache.get(user.getSteamId());
+                    if (!user.getServerName().equals(oldName)) {
+                        changes.add(String.format("#%d %s changed their username to %s\n", user.getUserId(), oldName, currentName));
+                        nameCache.put(user.getSteamId(), currentName);
+                    }
+                }
+            }
+            if (changes.isEmpty())
+                return;
+            System.out.println();
+            System.out.println(String.join("\n", changes));
             return;
         }
-
+        if (!line.startsWith("#"))
+            return;
         if (!line.contains("STEAM_"))
             return;
         line = line.replaceAll("\\s{2,}", " ");
@@ -211,11 +165,13 @@ public class Monitor {
         if (parts.length < 6)
             return;
         String id = parts[parts.length - 6];
-        if (!id.startsWith("STEAM_"))
+        if (!id.startsWith("STEAM_")) {
+            System.out.println("Expected STEAM_ at " + id + ". Has the status format changed?");
             return;
+        }
         String name = line.substring(line.indexOf("\"") + 1, line.indexOf("\"", line.indexOf("\"") + 1));
         User user = new User(parts[1], name, id);
-        if (cache && userCache.containsKey(user.getCommunityID())) {
+        if (config.doCache() && userCache.containsKey(user.getCommunityID())) {
             long time = userCache.get(user.getCommunityID());
             user.setDate(Math.abs(time), time < 0);
             users.add(user);
@@ -228,9 +184,13 @@ public class Monitor {
         for (Player p : players) {
             if (p.getTimecreated() == null)
                 continue;
+
             User user = null;
             long currentDiff = Long.MAX_VALUE;
             for (User u : unknown) {
+                // In this case, communityID should be close to Steamid
+                // The Player's steamid is the one that we know the creation date of
+                // The user's communityid will vary slightly, the less diff, the more accurate the time is
                 long diff = Math.abs(u.getCommunityID() - Long.parseLong(p.getSteamid()));
                 if (diff >= currentDiff)
                     continue;
@@ -243,7 +203,7 @@ public class Monitor {
                 System.out.printf("ERROR: Unable to get steam age of %s", p.getPersonaname());
                 continue;
             }
-            if (currentDiff == 0 || persistGuesses)
+            if (currentDiff == 0 /* Not a guess */ || config.persistGuesses())
                 userCache.put(user.getCommunityID(), (currentDiff == 0 ? p.getTimecreated().longValue() : -p.getTimecreated().longValue()) * 1000L);
 
             user.setDate(p.getTimecreated() * 1000L, currentDiff != 0);
@@ -251,8 +211,7 @@ public class Monitor {
         }
     }
 
-    private void removeKnownNames() {
-        Iterator<User> it = unknown.iterator();
+    private void removeKnownNames(Iterator<User> it) {
         while (it.hasNext()) {
             User u = it.next();
             if (u.getDate() == -1)
