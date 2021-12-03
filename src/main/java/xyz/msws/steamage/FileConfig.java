@@ -31,14 +31,14 @@ public class FileConfig extends Config {
                 write.write("rate=5000\n");
                 write.write("\n");
                 write.write("The header is printed after each status output in console, useful for distinguishing outputs\n");
-                write.write("header={}{}{}{}=================================\n");
+                write.write("header=\\n\\n\\n=================================\n");
                 write.write("\n");
                 write.write("Some profiles have their visibility set to private, this application guesstimates based off other accounts that were made immediately before/after\n");
                 write.write("If false, we will try to fetch, if true, we will save the estimated guess\n");
                 write.write("persistGuessses=true\n");
                 write.write("\n");
                 write.write("Source sometimes fails to print the #end of a status command. If this happens,\n");
-                write.write("we will assume the status has ended after X milliseconds\n");
+                write.write("we will assume the status has ended after X milliseconds (-1 to disable)\n");
                 write.write("statusTimeout=5000\n");
                 write.write("\n");
                 write.write("Some people may break a rule and quickly disconnect. This checks if the same\n");

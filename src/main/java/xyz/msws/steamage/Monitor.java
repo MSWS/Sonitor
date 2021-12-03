@@ -115,12 +115,16 @@ public class Monitor {
             lastStatus = System.currentTimeMillis();
             return;
         }
-        if (line.contains("#end") || (lastStatus != -1 && System.currentTimeMillis() - lastStatus > config.getTimeout())) {
+        if (line.contains("#end") || (lastStatus != -1 && System.currentTimeMillis() - lastStatus > config.getTimeout() && config.getTimeout() != -1)) {
             lastStatus = -1;
             // Sometimes CS doesn't print the #end at the end
             int offset = 0;
             while (!unknown.isEmpty()) {
                 GetPlayerSummaries response = getUserSummaries(unknown, offset);
+                if(response == null){
+                    System.out.println("Unable to query Steam API, is your API Key invalid?");
+                    return;
+                }
                 List<Player> players = response.getResponse().getPlayers();
                 processPlayers(players);
                 removeKnownNames(unknown.iterator());
@@ -136,7 +140,7 @@ public class Monitor {
                 }
             Collections.sort(users);
             if (config.getHeader() != null)
-                Arrays.stream(config.getHeader().split("\\{}")).forEach(System.out::println);
+                Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
             List<String> changes = new ArrayList<>();
             for (User user : users) {
                 System.out.printf("#%d %s: %s\n", user.getUserId(), user.getServerName(), (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate()));
