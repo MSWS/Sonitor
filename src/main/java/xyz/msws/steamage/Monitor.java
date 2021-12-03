@@ -109,7 +109,8 @@ public class Monitor {
     }
 
     private void parse(String line) {
-        if (line.contains("# userid name uniqueid connected ping loss state rate")) {
+
+        if (line.contains("# userid name uniqueid connected ping loss state rate") || line.contains("# userid name                uniqueid            connected ping loss state")) {
             users = new ArrayList<>();
             unknown = new ArrayList<>();
             lastStatus = System.currentTimeMillis();
@@ -121,7 +122,7 @@ public class Monitor {
             int offset = 0;
             while (!unknown.isEmpty()) {
                 GetPlayerSummaries response = getUserSummaries(unknown, offset);
-                if(response == null){
+                if (response == null) {
                     System.out.println("Unable to query Steam API, is your API Key invalid?");
                     return;
                 }
@@ -162,19 +163,25 @@ public class Monitor {
         }
         if (!line.startsWith("#"))
             return;
-        if (!line.contains("STEAM_"))
+        boolean source = line.contains("[U:") && !line.contains("STEAM_");
+        if (!source && !line.contains("STEAM_"))
             return;
         line = line.replaceAll("\\s{2,}", " ");
         String[] parts = line.split(" ");
         if (parts.length < 6)
             return;
         String id = parts[parts.length - 6];
+
         if (!id.startsWith("STEAM_")) {
-            System.out.println("Expected STEAM_ at " + id + ". Has the status format changed?");
-            return;
+            id = parts[parts.length - 5];
+            if (!id.startsWith("[U:")) {
+                System.out.println("Expected STEAM_ at " + id + ". Has the status format changed?");
+                return;
+            }
+            id = id.substring(1, id.length() - 1);
         }
         String name = line.substring(line.indexOf("\"") + 1, line.indexOf("\"", line.indexOf("\"") + 1));
-        User user = new User(parts[1], name, id);
+        User user = new User(parts[1], name, source ? Convert.sourceSteamToSteam(id) : id);
         if (config.doCache() && userCache.containsKey(user.getCommunityID())) {
             long time = userCache.get(user.getCommunityID());
             user.setDate(Math.abs(time), time < 0);

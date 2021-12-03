@@ -1,5 +1,6 @@
 package xyz.msws.steamage;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,31 +50,40 @@ public class FileConfig extends Config {
                 e.printStackTrace();
             }
             System.out.println("Created settings.txt located at " + file.getAbsolutePath());
-            System.out.println("Please follow the guide at http://msws.xyz/age");
+            System.out.println("Please follow the guide at https://msws.xyz/age");
+            try {
+                Desktop.getDesktop().open(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         sets = readFile(file);
         for (String line : sets.split("\n")) {
             if (line.startsWith("directory=")) {
-                outputPath = line.substring("directory=".length());
+                outputPath = getValue(line, "directory=");
             } else if (line.startsWith("steamkey=")) {
-                apiKey = line.substring("steamkey=".length());
+                apiKey = getValue(line, "steamkey=");
             } else if (line.startsWith("cache=")) {
-                cache = Boolean.parseBoolean(line.substring("cache=".length()));
+                cache = Boolean.parseBoolean(getValue(line, "cache="));
             } else if (line.startsWith("persist=")) {
-                persistKnowns = Boolean.parseBoolean(line.substring("persist=".length()));
+                persistKnowns = Boolean.parseBoolean(getValue(line, "persist="));
             } else if (line.startsWith("clonePath=")) {
-                clonePath = line.substring("clonePath=".length());
+                clonePath = getValue(line, "clonePath=");
             } else if (line.startsWith("rate=")) {
-                rate = Long.parseLong(line.substring("rate=".length()));
+                rate = Long.parseLong(getValue(line, "rate="));
             } else if (line.startsWith("header=")) {
-                header = line.substring("header=".length());
+                header = getValue(line, "header=");
             } else if (line.startsWith("persistGuesses=")) {
-                persistGuesses = Boolean.parseBoolean(line.substring("persistGuesses=".length()));
+                persistGuesses = Boolean.parseBoolean(getValue(line, "persistGuesses="));
             } else if (line.startsWith("warnNameChanges=")) {
-                warnNameChanges = Boolean.parseBoolean(line.substring("warnNameChanges=".length()));
+                warnNameChanges = Boolean.parseBoolean(getValue(line, "warnNameChanges="));
             } else if (line.startsWith("statusTimeout=")) {
-                timeout = Long.parseLong(line.substring("statusTimeout=".length()));
+                timeout = Long.parseLong(getValue(line, "statusTimeout="));
             }
         }
+    }
+
+    private String getValue(String value, String key) {
+        return value.substring(key.length());
     }
 }

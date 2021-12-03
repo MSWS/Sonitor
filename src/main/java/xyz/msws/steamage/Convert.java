@@ -4,9 +4,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class Convert {
+    // Convert from STEAM_1:1:45244579 to 76561198050754887
     public static long steamToCommunity(String steam) {
-        if (steam == null || !steam.startsWith("STEAM_"))
-            return -1;
+        if (steam == null)
+            throw new NullPointerException("Steam ID is null");
+        if (!steam.startsWith("STEAM_"))
+            throw new IllegalArgumentException("Not a 64 steam ID");
         String[] parts = steam.substring("STEAM_".length()).split(":");
         if (parts.length != 3)
             return -1;
@@ -14,10 +17,26 @@ public class Convert {
         return z * 2L + 0x0110000100000000L + y;
     }
 
+    // Convert back from 76561198050754887 to STEAM_1:1:45244579
     public static String communityToSteam(long community) {
         int y = community % 2 == 0 ? 0 : 1;
         int result = (int) (community / 2 - 0x0110000100000000L / 2);
         return String.format("STEAM_0:%d:%d", y, result);
+    }
+
+    // Convert from [U:1:90489159] to STEAM_0:1:45244579
+    public static String sourceSteamToSteam(String steam) {
+        if (steam == null)
+            throw new NullPointerException("Steam ID is null");
+        if (!steam.startsWith("U:"))
+            throw new IllegalArgumentException("Not a 64 steam ID");
+        String[] parts = steam.substring("U:".length()).split(":");
+        if (parts.length != 2)
+            return null;
+        int y = Integer.parseInt(parts[0]), z = Integer.parseInt(parts[1]);
+        int type = z % 2 == 0 ? 0 : 1;
+        int id = (int) Math.floor((z - type) / 2);
+        return "STEAM_0:" + type + ":" + id;
     }
 
     enum TimeUnit {
