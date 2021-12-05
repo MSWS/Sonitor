@@ -6,8 +6,7 @@ import com.lukaspradel.steamapi.data.json.playersummaries.Player;
 import com.lukaspradel.steamapi.webapi.client.SteamWebApiClient;
 import com.lukaspradel.steamapi.webapi.request.SteamWebApiRequest;
 import com.lukaspradel.steamapi.webapi.request.builders.SteamWebApiRequestFactory;
-import xyz.msws.admintools.*;
-import xyz.msws.admintools.data.Config;
+import xyz.msws.admintools.Monitor;
 import xyz.msws.admintools.data.User;
 import xyz.msws.admintools.utils.Convert;
 
@@ -19,19 +18,17 @@ import java.util.stream.Collectors;
 
 import static xyz.msws.admintools.utils.FileUtils.readFile;
 
-public class PlayerParsers extends Parser {
+public class PlaytimeParser extends Parser {
     private List<User> users = new ArrayList<>(), unknown = new ArrayList<>();
     long lastStatus = -1;
     private SteamWebApiClient client;
-    private Config config;
     private final File master = new File(System.getProperty("user.dir"));
     private final File cacheFile = new File(master, "cache.txt");
     private final Map<String, String> nameCache = new HashMap<>();
     private final Map<Long, Long> userCache = new HashMap<>();
 
-    public PlayerParsers(Monitor monitor) {
+    public PlaytimeParser(Monitor monitor) {
         super(monitor);
-        config = monitor.getConfig();
         client = new SteamWebApiClient.SteamWebApiClientBuilder(config.getApiKey()).build();
         try {
             cacheFile.createNewFile();

@@ -2,8 +2,9 @@ package xyz.msws.admintools;
 
 import xyz.msws.admintools.data.Config;
 import xyz.msws.admintools.data.FileConfig;
+import xyz.msws.admintools.parsers.JBParser;
 import xyz.msws.admintools.parsers.Parser;
-import xyz.msws.admintools.parsers.PlayerParsers;
+import xyz.msws.admintools.parsers.PlaytimeParser;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -30,14 +31,15 @@ public class Monitor extends TimerTask {
     public Monitor() {
         if (!setupFiles())
             return;
-        parsers.add(new PlayerParsers(this));
+        parsers.add(new PlaytimeParser(this));
+        parsers.add(new JBParser(this));
         timer.schedule(this, config.getRate(), config.getRate());
     }
 
     public void run() {
         String lines = readFile(output);
         for (String line : lines.split("\n")) {
-            parse(line);
+            parse(line.trim());
         }
 
         try (FileWriter writer = new FileWriter(output)) {

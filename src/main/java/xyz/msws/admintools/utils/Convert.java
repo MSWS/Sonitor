@@ -71,7 +71,6 @@ public class Convert {
         return String.format("%.2f %s", (double) ms / unit.toMillis(1), unit.toString().toLowerCase());
     }
 
-
     @Test(expected = NullPointerException.class)
     public void testNull() {
         steamToCommunity(null);
