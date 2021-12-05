@@ -31,8 +31,10 @@ public class Monitor extends TimerTask {
     public Monitor() {
         if (!setupFiles())
             return;
-        parsers.add(new PlaytimeParser(this));
-        parsers.add(new JBParser(this));
+        if (config.doPlaytime())
+            parsers.add(new PlaytimeParser(this));
+        if (config.doJailbreak())
+            parsers.add(new JBParser(this));
         timer.schedule(this, config.getRate(), config.getRate());
     }
 

@@ -9,8 +9,38 @@ public abstract class Config {
     protected String header = "";
     protected String outputPath = null, apiKey = null, clonePath = null;
     protected EnumSet<ActionType> actions = EnumSet.of(ActionType.KILL, ActionType.WARDEN, ActionType.WARDEN_DEATH, ActionType.FIRE, ActionType.PASS, ActionType.RESKIN);
-    protected int gunTimeout = 10, buttonTimeout = 5, nadeTimeout = 10;
-    protected boolean showEarlyVents = true, showEarlyKills = true;
+    protected int gunTimeout = 10, buttonTimeout = 5, nadeTimeout = 10, wardenTimeout = 5, freeTime = 10;
+    protected boolean showEarlyVents = true, showEarlyKills = true, showGameButtons = true, showNades = true, showGunPlants = true;
+    protected boolean doJailbreak = true, doPlaytime = true;
+
+    public boolean showNades() {
+        return showNades;
+    }
+
+    public boolean showGunPlants() {
+        return showGunPlants;
+    }
+
+    public boolean showGameButtons() {
+        return showGameButtons;
+    }
+
+    public boolean doJailbreak() {
+        return doJailbreak;
+    }
+
+    public boolean doPlaytime() {
+        return doPlaytime;
+    }
+
+    public int getWardenTimeout() {
+        return wardenTimeout;
+    }
+
+    public int getFreeTime() {
+        return freeTime;
+    }
+
 
     public EnumSet<ActionType> getActions() {
         return actions;
@@ -35,7 +65,6 @@ public abstract class Config {
     public boolean showEarlyKills() {
         return showEarlyKills;
     }
-
 
     public long getTimeout() {
         return timeout;

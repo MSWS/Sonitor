@@ -109,7 +109,6 @@ public class Action implements Comparable<Action> {
         boolean world = playerRole == Role.WORLD;
 
         playerStart = 8;
-        System.out.printf("role %s, start %d, end %d\n", playerRole.toString(), playerRoleStart, playerRoleEnd);
         playerEnd = playerRoleStart - (world ? -5 : 2);
 
         if (type != ActionType.DAMAGE && type != ActionType.KILL)
@@ -134,7 +133,6 @@ public class Action implements Comparable<Action> {
     }
 
     private String findPlayer() {
-        System.out.println("line: " + line);
         return line.substring(playerStart, playerEnd);
     }
 

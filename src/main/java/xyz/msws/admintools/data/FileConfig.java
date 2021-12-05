@@ -19,6 +19,9 @@ public class FileConfig extends Config {
             lines.add("This is where the output file from CS:GO is located");
             lines.add("directory=C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
             lines.add("");
+            lines.add("If true, the application will check and output account ages");
+            lines.add("doPlaytime=true");
+            lines.add("");
             lines.add("This is your steam API Key, open the link if you do not know where to get it");
             lines.add("steamkey=https://steamcommunity.com/dev/apikey");
             lines.add("");
@@ -51,13 +54,41 @@ public class FileConfig extends Config {
             lines.add("warnNameChages=true");
             lines.add("");
             lines.add("Jailbreak Specific Settings");
-            lines.add("Values: DAMAGE, KILL, BUTTON, WARDEN, VENTS, DROP_WEAPON, NADE, WARDEN_DEATH, PASS, FIRE, RESKIN");
+            lines.add("Log specific summarized actions");
+            lines.add("Values: DAMAGE, KILL, BUTTON, WARDEN, VENTS, DROP_WEAPON, NADE, WARDEN_DEATH, PASS, FIRE, RESKIN, GHOST_RESPAWN");
+            lines.add("Damage: Whenever a player damages another player");
+            lines.add("Kill: Whenever a player kills another player");
+            lines.add("Button: Whenever a player pushes a button");
+            lines.add("Warden: Whenever a player takes warden");
+            lines.add("Vents: Whenever a player breaks vents");
+            lines.add("Drop_Weapon: Whenever a player drops a weapon");
+            lines.add("Nade: Whenever a player throws a nade");
+            lines.add("Warden_Death: Whenever the warden dies");
+            lines.add("Pass: Whenever the warden passes");
+            lines.add("Fire: Whenever the warden is fired");
+            lines.add("Reskin: Whenever a player reskins a weapon");
+            lines.add("Ghost_Respawn: Whenever a ghost respawns");
             lines.add("showTypes=KILL,WARDEN,WARDEN_DEATH,FIRE,PASS,RESKIN");
+            lines.add("Cooldown for when a CT drops a gun and a T uses the same type of gun (seconds)");
             lines.add("gundropTimeout=10");
+            lines.add("Cooldown for when a player pushes a button and a player takes damage from the world (seconds)");
             lines.add("buttonTimeout=5");
+            lines.add("Cooldown for when a player throws a nade and a player takes damage from the world (seconds)");
             lines.add("nadeTimeout=10");
+            lines.add("Time that prisoners have when a new warden is selected (seconds)");
+            lines.add("wardenTimeout=5");
+            lines.add("Max time round can go without a warden until it is a freeday (when warden passes/fired) (seconds)");
+            lines.add("freeTime=10");
+            lines.add("Show if a CT breaks vents before any prisoner does");
             lines.add("showEarlyVents=true");
+            lines.add("Show if a CT kills/damages a prisoner when there is no warden, or within 3 seconds of a new warden");
             lines.add("showEarlyKills=true");
+            lines.add("Show if a player pushes a button and other players take damage from the world within buttonTimeout");
+            lines.add("showGameButtons=true");
+            lines.add("Show if a player throws a nade and other players take damage from the world within nadeTimeout");
+            lines.add("showNades=true");
+            lines.add("Show if a CT drops a gun and a prisoner uses the same gun within gundropTimeout");
+            lines.add("showGunPlants=true");
 
             try (FileWriter write = new FileWriter(file)) {
                 write.write(String.join("\n", lines));
@@ -108,6 +139,18 @@ public class FileConfig extends Config {
                 showEarlyVents = getValue(line, "showEarlyVents=", Boolean.class);
             } else if (line.startsWith("showEarlyKills=")) {
                 showEarlyKills = getValue(line, "showEarlyKills=", Boolean.class);
+            } else if (line.startsWith("showGameButtons=")) {
+                showGameButtons = getValue(line, "showGameButtons=", Boolean.class);
+            } else if (line.startsWith("showNades=")) {
+                showNades = getValue(line, "showNades=", Boolean.class);
+            } else if (line.startsWith("showGunPlants=")) {
+                showGunPlants = getValue(line, "showGunPlants=", Boolean.class);
+            } else if (line.startsWith("doPlaytime=")) {
+                doPlaytime = getValue(line, "doPlaytime=", Boolean.class);
+            } else if (line.startsWith("wardenTimeout=")) {
+                wardenTimeout = getValue(line, "wardenTimeout=", Integer.class);
+            } else if (line.startsWith("freeTime=")) {
+                freeTime = getValue(line, "freeTime=", Integer.class);
             }
         }
     }
