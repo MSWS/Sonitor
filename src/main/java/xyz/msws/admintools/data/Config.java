@@ -1,4 +1,4 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools.data;
 
 public abstract class Config {
     long rate = 5000;

@@ -1,4 +1,4 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools;
 
 public class Main {
     public static void main(String[] args) {

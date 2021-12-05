@@ -1,4 +1,6 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools.data;
+
+import xyz.msws.admintools.utils.Convert;
 
 public class User implements Comparable<User> {
 

@@ -1,11 +1,11 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools.data;
 
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static xyz.msws.steamage.FileUtils.readFile;
+import static xyz.msws.admintools.utils.FileUtils.readFile;
 
 public class FileConfig extends Config {
     public FileConfig(File file) {

@@ -1,4 +1,4 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools.utils;
 
 import java.io.BufferedInputStream;
 import java.io.File;

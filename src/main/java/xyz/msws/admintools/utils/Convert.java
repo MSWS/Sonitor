@@ -1,4 +1,4 @@
-package xyz.msws.steamage;
+package xyz.msws.admintools.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class Convert {
             return null;
         int y = Integer.parseInt(parts[0]), z = Integer.parseInt(parts[1]);
         int type = z % 2 == 0 ? 0 : 1;
-        int id = (int) Math.floor((z - type) / 2);
+        int id = (int) Math.floor((double) (z - type) / 2);
         return "STEAM_0:" + type + ":" + id;
     }
 
@@ -72,9 +72,9 @@ public class Convert {
     }
 
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testNull() {
-        Assert.assertEquals(steamToCommunity(null), -1);
+        steamToCommunity(null);
     }
 
     @Test
