@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xyz.msws</groupId>
-    <artifactId>SteamAge</artifactId>
+    <artifactId>Sonitor</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
