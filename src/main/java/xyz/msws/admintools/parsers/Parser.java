@@ -3,6 +3,9 @@ package xyz.msws.admintools.parsers;
 import xyz.msws.admintools.Monitor;
 import xyz.msws.admintools.data.Config;
 
+/**
+ * Represents a parser
+ */
 public abstract class Parser {
     protected Monitor monitor;
     protected Config config;

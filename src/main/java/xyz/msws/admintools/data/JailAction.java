@@ -5,11 +5,13 @@ import java.util.List;
 
 /**
  * Represents a line in Jailbreak Logs
+ * <p>
+ * Compares by time
  */
-public class JailbreakAction implements Comparable<JailbreakAction> {
+public class JailAction implements Comparable<JailAction> {
     private JailActionType type;
     private String player, target;
-    private Role playerRole, targetRole;
+    private JailRole playerRole, targetRole;
     private String[] other;
     private String line;
 
@@ -19,7 +21,7 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
 
     private long time;
 
-    public JailbreakAction(String line) {
+    public JailAction(String line) {
         this.line = line;
         this.type = findActionType();
 
@@ -40,11 +42,11 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
         return target;
     }
 
-    public Role getPlayerRole() {
+    public JailRole getPlayerRole() {
         return playerRole;
     }
 
-    public Role getTargetRole() {
+    public JailRole getTargetRole() {
         return targetRole;
     }
 
@@ -87,11 +89,11 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
     }
 
     private void calculateIndices() {
-        for (Role role : Role.values()) {
+        for (JailRole role : JailRole.values()) {
             int index = line.toUpperCase().indexOf("(" + role.toString() + ")");
             if (index != -1) {
                 index++;
-            } else if (role == Role.WORLD) {
+            } else if (role == JailRole.WORLD) {
                 index = line.toUpperCase().indexOf((role.toString()));
             } else {
                 index = line.indexOf("(" + role.toString().charAt(0) + role.toString().substring(1).toLowerCase() + ")") + 1;
@@ -99,17 +101,17 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
 
             if (index <= 0 || index > playerRoleStart)
                 continue;
-            if (role == Role.WORLD) {
+            if (role == JailRole.WORLD) {
                 playerRoleStart = index;
                 playerRoleEnd = playerRoleStart + "The World".length();
-                playerRole = Role.WORLD;
+                playerRole = JailRole.WORLD;
             } else {
                 playerRoleStart = index;
                 playerRoleEnd = playerRoleStart + role.toString().length();
-                playerRole = Role.valueOf(line.substring(playerRoleStart, playerRoleEnd).toUpperCase());
+                playerRole = JailRole.valueOf(line.substring(playerRoleStart, playerRoleEnd).toUpperCase());
             }
         }
-        boolean world = playerRole == Role.WORLD;
+        boolean world = playerRole == JailRole.WORLD;
 
         playerStart = 8;
         playerEnd = playerRoleStart - (world ? -5 : 2);
@@ -117,15 +119,15 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
         if (type != JailActionType.DAMAGE && type != JailActionType.KILL)
             return;
 
-        for (Role role : Role.values()) {
+        for (JailRole role : JailRole.values()) {
 //            int index = line.toUpperCase().lastIndexOf("(" + role.toString() + ")") + 1;
-            int index = role == Role.WARDEN ? line.toUpperCase().lastIndexOf(role.toString()) : (line.toUpperCase().lastIndexOf("(" + role + ")") + 1);
+            int index = role == JailRole.WARDEN ? line.toUpperCase().lastIndexOf(role.toString()) : (line.toUpperCase().lastIndexOf("(" + role + ")") + 1);
 
             if (index <= 0 || index == playerRoleStart)
                 continue;
             targetRoleStart = index;
             targetRoleEnd = targetRoleStart + role.toString().length();
-            targetRole = Role.valueOf(line.substring(targetRoleStart, targetRoleEnd).toUpperCase());
+            targetRole = JailRole.valueOf(line.substring(targetRoleStart, targetRoleEnd).toUpperCase());
             break;
         }
 
@@ -145,14 +147,14 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
         return line.substring(targetStart, targetEnd);
     }
 
-    private Role findPlayerRole() {
-        return Role.valueOf(line.substring(playerRoleStart + 1, playerRoleEnd - 1).toUpperCase());
+    private JailRole findPlayerRole() {
+        return JailRole.valueOf(line.substring(playerRoleStart + 1, playerRoleEnd - 1).toUpperCase());
     }
 
-    private Role findTargetRole() {
+    private JailRole findTargetRole() {
         if (targetRoleStart == -1 || targetRoleEnd == -1)
             return null;
-        return Role.valueOf(line.substring(targetRoleStart + 1, targetRoleEnd - 1).toUpperCase());
+        return JailRole.valueOf(line.substring(targetRoleStart + 1, targetRoleEnd - 1).toUpperCase());
     }
 
     private String[] findOther() {
@@ -198,7 +200,7 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
             s.addAll(List.of(other));
             opts = s.toArray(new String[0]);
         }
-        if (playerRole == Role.WORLD)
+        if (playerRole == JailRole.WORLD)
             return player + " " + type.getSummary(opts);
 
         return player + " (" + getPlayerRole().getIcon() + ") " + type.getSummary(opts);
@@ -213,7 +215,7 @@ public class JailbreakAction implements Comparable<JailbreakAction> {
     }
 
     @Override
-    public int compareTo(JailbreakAction o) {
+    public int compareTo(JailAction o) {
         return (int) (this.getTime() - o.getTime());
     }
 }

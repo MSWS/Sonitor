@@ -7,8 +7,10 @@ import java.io.IOException;
 import static xyz.msws.admintools.utils.FileUtils.readFile;
 import static xyz.msws.admintools.utils.FileUtils.saveResource;
 
+/**
+ * Flatfile implementation of {@link Config}
+ */
 public class FileConfig extends Config {
-
     public FileConfig(File file) {
         String sets = readFile(file);
         if (sets.isEmpty()) {
@@ -69,6 +71,8 @@ public class FileConfig extends Config {
                 wardenTimeout = getValue(line, "wardenTimeout=", Integer.class);
             } else if (line.startsWith("freeTime=")) {
                 freeTime = getValue(line, "freeTime=", Integer.class);
+            } else if (line.startsWith("doJailbreak=")) {
+                doJailbreak = getValue(line, "doJailbreak=", Boolean.class);
             }
         }
     }

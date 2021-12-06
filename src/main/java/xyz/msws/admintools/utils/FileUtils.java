@@ -5,7 +5,16 @@ import xyz.msws.admintools.Main;
 import java.io.*;
 import java.util.StringJoiner;
 
+/**
+ * Read / Write files / resources
+ */
 public class FileUtils {
+    /**
+     * Returns the file contents, or an empty string if the file does not exist or {@link IOException} occured;
+     *
+     * @param f File to read
+     * @return file contents or empty string
+     */
     public static String readFile(File f) {
         if (f == null || !f.exists())
             return "";
@@ -17,6 +26,11 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Saves the resource contained within the jar file to the current directory with the same file name
+     *
+     * @param name File path
+     */
     public static void saveResource(String name) {
         File file = new File(name);
         try {
@@ -37,6 +51,12 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Writes the full contents of the file
+     *
+     * @param file File to write to
+     * @param text Contents to write
+     */
     public static void writeFile(File file, String text) {
         try (FileWriter write = new FileWriter(file)) {
             write.write(text);

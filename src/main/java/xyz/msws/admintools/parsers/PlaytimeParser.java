@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 
 import static xyz.msws.admintools.utils.FileUtils.readFile;
 
+/**
+ * Parsers CSGO/CSS status and prints account ages
+ */
 public class PlaytimeParser extends Parser {
     private List<User> users = new ArrayList<>(), unknown = new ArrayList<>();
     long lastStatus = -1;

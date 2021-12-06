@@ -2,6 +2,9 @@ package xyz.msws.admintools.data;
 
 import java.util.EnumSet;
 
+/**
+ * Represents the configurable values that the user can specify
+ */
 public abstract class Config {
     protected long rate = 5000;
     protected long timeout = 5000;

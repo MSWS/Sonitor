@@ -2,8 +2,12 @@ package xyz.msws.admintools.data;
 
 import xyz.msws.admintools.utils.Convert;
 
+/**
+ * Represents any user on any server
+ * <p>
+ * Compares by creation date
+ */
 public class User implements Comparable<User> {
-
     private String serverName, steamId;
     private int userId;
     private long steamCom, date = -1;

@@ -1,7 +1,10 @@
 package xyz.msws.admintools.data;
 
+/**
+ * Represents a button that we know about
+ */
 public class Button {
-    private String name = null, alias = "";
+    private String name, alias = "";
     private boolean safe = false;
 
     public Button(String line) {
@@ -28,14 +31,29 @@ public class Button {
         this.alias = alias;
     }
 
+    /**
+     * Checks if the button is safe to ignore in terms of harming players
+     *
+     * @return if the button doesn't not harm players
+     */
     public boolean isSafe() {
         return safe;
     }
 
+    /**
+     * Gets the alias attached to the button, or an empty string if none
+     *
+     * @return the alias or an empty string
+     */
     public String getAlias() {
         return alias;
     }
 
+    /**
+     * Gets the button name / identification
+     *
+     * @return buttion id
+     */
     public String getName() {
         return name;
     }
