@@ -79,7 +79,6 @@ public class JBParser extends Parser {
     private void checkFreekills() {
         List<JailAction> allWarden = jbActions.stream().filter(act -> wardenRelated.contains(act.getType())).sorted().collect(Collectors.toList());
         TreeMap<Long, Boolean> cease = new TreeMap<>();
-
         for (JailAction act : allWarden) {
             switch (act.getType()) {
                 case WARDEN -> cease.put(act.getTime() + config.getWardenTimeout(), false);
@@ -132,14 +131,8 @@ public class JBParser extends Parser {
 
         if (!badCombat.isEmpty())
             print("\nGuard Freekills");
-        for (JailAction act : badCombat) {
-            int seconds = secondsToCease(cease, act.getTime());
-            if (seconds == -1) {
-                print(act.simplify() + " with no warden.");
-                continue;
-            }
-            print(act.simplify() + " within " + seconds + MSG.plural("second", seconds) + " of new warden");
-        }
+        for (JailAction act : badCombat)
+            print(act.simplify() + " without warden or insufficient time given.");
     }
 
     /**
@@ -268,24 +261,9 @@ public class JBParser extends Parser {
     private boolean ceaseFire(TreeMap<Long, Boolean> times, long time) {
         List<Long> ts = new ArrayList<>(times.keySet());
         for (int i = 0; i < ts.size(); i++)
-            if (time >= ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1)))
+            if (time > ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1)))
                 return times.get(ts.get(i));
         return false;
-    }
-
-    /**
-     * Returns the seconds since a CT took warden
-     *
-     * @param times Cease fire map
-     * @param time  Time to check
-     * @return New warden duration (or -1 if no warden)
-     */
-    private int secondsToCease(TreeMap<Long, Boolean> times, long time) {
-        List<Long> ts = new ArrayList<>(times.keySet());
-        for (int i = 0; i < ts.size(); i++)
-            if (time >= ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1)))
-                return times.get(ts.get(i)) ? -1 : (int) (time - ts.get(i));
-        return 0;
     }
 
     private void print(String line) {

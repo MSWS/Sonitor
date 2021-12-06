@@ -70,7 +70,8 @@ public class Monitor extends TimerTask {
             directories.add(config.getOutputPath());
             if (output != null) {
                 directories.add(output.getAbsolutePath());
-                directories.add(output.getParentFile().getAbsolutePath());
+                if (output.exists())
+                    directories.add(output.getParentFile().getAbsolutePath());
             }
         }
 
@@ -142,7 +143,8 @@ public class Monitor extends TimerTask {
             logFile = lines.get(index).substring(lines.get(index).indexOf(" ") + 1);
         }
 
-        output = new File(parent, logFile);
+        if (!output.exists())
+            output = new File(parent, logFile);
         if (!output.exists()) {
             output = new File(logFile);
             if (!output.exists()) {

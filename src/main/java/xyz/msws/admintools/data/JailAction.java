@@ -211,7 +211,7 @@ public class JailAction implements Comparable<JailAction> {
     }
 
     public String getTimeString() {
-        return (int) Math.floor((float) time / 60) + ":" + time % 60;
+        return String.format("%02d:%02d", (int) Math.floor((float) time / 60), time % 60);
     }
 
     @Override

@@ -1,3 +1,13 @@
+Format: buttonId:safe:Alias
+You can add buttons here and Sonitor will auto-hide safe buttons, and auto-display aliases if known
+For example if you had the following line:
+[00:01] burb (Guard) pressed button 'gun_button_6'
+You could add: 'gun_button_6:true:Armory Button'
+This would prevent damages / deaths that happen after this button from being flagged as potentially malicious
+You can also use this to easily identify unknown button
+[00:03] Kasper (Prisoner) pressed button 'Unknown' (#23730)
+This would be: '#23730:true:Prisoner Button'
+
 piano_key_A:true:Piano A
 piano_key_As:true:Piano A#
 piano_key_B:true:Piano B
