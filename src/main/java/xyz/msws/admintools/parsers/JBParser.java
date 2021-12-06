@@ -126,13 +126,13 @@ public class JBParser extends Parser {
 
 
         List<JailAction> badCombat = jbActions.stream().filter(act -> act.getType() == JailActionType.DAMAGE || act.getType() == JailActionType.KILL)
-                .filter(act -> act.getPlayerRole() == JailRole.GUARD || act.getPlayerRole() == JailRole.WARDEN).filter(act -> act.getTargetRole() == JailRole.PRISONER)
+                .filter(act -> act.getPlayerRole().isCT()).filter(act -> act.getTargetRole() == JailRole.PRISONER)
                 .filter(act -> ceaseFire(cease, act.getTime())).collect(Collectors.toList());
 
         if (!badCombat.isEmpty())
             print("\nGuard Freekills");
         for (JailAction act : badCombat)
-            print(act.simplify() + " without warden or insufficient time given.");
+            print(act.simplify() + " without warden or " + config.getWardenTimeout() + " " + MSG.plural("second", config.getWardenTimeout()) + " given.");
     }
 
     /**
@@ -143,7 +143,7 @@ public class JBParser extends Parser {
         for (JailAction act : jbActions) {
             if (act.getType() != JailActionType.VENTS)
                 continue;
-            if (act.getPlayerRole() == JailRole.PRISONER)
+            if (act.getPlayerRole().isT())
                 break;
             breaks.add(act);
         }
@@ -171,7 +171,7 @@ public class JBParser extends Parser {
             if (damaged.isEmpty())
                 continue;
             result.append(press.simplify());
-            result.append(" which could've harmed ");
+            result.append(", might've harmed ");
             Set<String> players = new HashSet<>();
             int t = 0, ct = 0;
             for (JailAction act : damaged) {
@@ -207,8 +207,11 @@ public class JBParser extends Parser {
         List<JailAction> nades = jbActions.stream().filter(act -> act.getType() == JailActionType.NADE).collect(Collectors.toList());
 
         for (JailAction act : jbActions.stream().filter(act -> act.getPlayerRole() == JailRole.WORLD).collect(Collectors.toList())) {
-            List<JailAction> press = nades.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout())
-                    .filter(p -> !act.getTarget().equals(p.getPlayer())).collect(Collectors.toList());
+            List<JailAction> press = nades.stream()
+                    .filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout())
+                    .filter(p -> !act.getTarget().equals(p.getPlayer()))
+                    .filter(p -> !p.getOther()[0].equals("molotov") && !p.getOther()[0].equals("grenade"))
+                    .collect(Collectors.toList());
             for (JailAction p : press) {
                 print("\nNade Disruptions");
                 print(p.simplify() + " which could've disrupted " + act.getTarget() + " (" + act.getTargetRole().getIcon() + ")");
@@ -220,14 +223,16 @@ public class JBParser extends Parser {
      * Checks if a CT drops a gun and a T uses the same type of gun soon after
      */
     private void checkGuns() {
-        Map<String, List<JailAction>> drops = new HashMap<>();
 
         List<JailAction> guns = jbActions.stream().filter(act -> act.getType() == JailActionType.DROP_WEAPON && act.getPlayerRole().isCT()).collect(Collectors.toList());
-        for (JailAction act : guns) {
-            String gun = act.getOther()[0];
-            List<JailAction> related = drops.getOrDefault(gun, new ArrayList<>());
-            related.add(act);
-            drops.put(gun, related);
+        Iterator<JailAction> it = guns.iterator();
+        while (it.hasNext()) {
+            JailAction drop = it.next();
+            JailAction death = jbActions.stream().filter(a -> a.getType() == JailActionType.KILL && a.getTarget().equals(drop.getPlayer())).findFirst().orElse(null);
+            if (death == null)
+                continue;
+            if (death.getTime() == drop.getTime() || death.getTime() + 1 == drop.getTime())
+                it.remove();
         }
 
         for (JailAction act : jbActions.stream().filter(act -> act.getType() == JailActionType.DAMAGE && act.getPlayerRole().isT()).collect(Collectors.toList())) {
