@@ -1,0 +1,15 @@
+piano_key_A:true:Piano A
+piano_key_As:true:Piano A#
+piano_key_B:true:Piano B
+piano_key_C:true:Piano C
+piano_key_Cs:true:Piano C#
+piano_key_D:true:Piano D
+piano_key_Ds:true:Piano D#
+piano_key_E:true:Piano E
+piano_key_F:true:Piano F
+piano_key_Fs:true:Piano F#
+piano_key_G:true:Piano G
+piano_key_Gs:true:Piano G#
+sltm_lever:true:
+sltm_2_lever:true:
+cellbutton:true:

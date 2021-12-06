@@ -153,14 +153,22 @@ public class Action implements Comparable<Action> {
     }
 
     private String[] findOther() {
-        return switch (type) {
-            case DAMAGE -> new String[]{line.substring(line.lastIndexOf("with ") + "with ".length(), line.lastIndexOf("damage") - 1), line.substring(line.lastIndexOf("(") + 1, line.length() - 1)};
-            case BUTTON -> new String[]{line.substring(line.lastIndexOf("button ") + "button ".length())};
-            case DROP_WEAPON -> new String[]{line.substring(line.lastIndexOf(" ") + 1, line.length() - 1)};
-            case NADE -> new String[]{line.substring(line.lastIndexOf(" ") + 1)};
-            case RESKIN -> new String[]{line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(), line.indexOf(" (previous owner:")), line.substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1)};
-            default -> new String[]{};
-        };
+        switch (type) {
+            case DAMAGE:
+                return new String[]{line.substring(line.lastIndexOf("with ") + "with ".length(), line.lastIndexOf("damage") - 1), line.substring(line.lastIndexOf("(") + 1, line.length() - 1)};
+            case BUTTON:
+                String name = line.substring(line.substring(0, line.length() - 1).lastIndexOf(line.contains("pressed button 'Unknown'") ? "(" : "'", line.length() - 2) + 1, line.length() - 1);
+                Button b = ButtonDatabase.getInstance().getButton(name);
+                return new String[]{b.getName(), b.getAlias()};
+            case DROP_WEAPON:
+                return new String[]{line.substring(line.lastIndexOf(" ") + 1, line.length() - 1)};
+            case NADE:
+                return new String[]{line.substring(line.lastIndexOf(" ") + 1)};
+            case RESKIN:
+                return new String[]{line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(), line.indexOf(" (previous owner:")), line.substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1)};
+            default:
+                return new String[]{};
+        }
     }
 
     private long findTime() {

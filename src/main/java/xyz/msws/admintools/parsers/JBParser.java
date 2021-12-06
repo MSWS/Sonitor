@@ -1,17 +1,24 @@
 package xyz.msws.admintools.parsers;
 
 import xyz.msws.admintools.Monitor;
-import xyz.msws.admintools.data.Action;
-import xyz.msws.admintools.data.ActionType;
-import xyz.msws.admintools.data.Role;
+import xyz.msws.admintools.data.*;
+import xyz.msws.admintools.utils.MSG;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JBParser extends Parser {
+
+    private final ButtonDatabase buttondb;
+
     public JBParser(Monitor monitor) {
         super(monitor);
+
+        File master = new File(System.getProperty("user.dir"));
+        File buttons = new File(master, "buttons.txt");
+        this.buttondb = new ButtonDatabase(buttons);
     }
 
     private final List<Action> actions = new ArrayList<>();
@@ -85,7 +92,11 @@ public class JBParser extends Parser {
             print("\nGuard Freekills");
         for (Action act : badCombat) {
             int seconds = secondsToCease(cease, act.getTime());
-            print(act.simplify() + " when there was no warden not enough time given (" + seconds + " seconds)");
+            if (seconds == -1) {
+                print(act.simplify() + " while there wasn't a warden.");
+                continue;
+            }
+            print(act.simplify() + " within " + seconds + MSG.plural("second", seconds) + " of new warden");
         }
     }
 
@@ -107,13 +118,36 @@ public class JBParser extends Parser {
 
     private void checkWorldButtons() {
         List<Action> presses = actions.stream().filter(act -> act.getType() == ActionType.BUTTON).collect(Collectors.toList());
+        List<Action> damages = actions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList());
 
-        for (Action act : actions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList())) {
-            List<Action> press = presses.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getButtonTimeout()).collect(Collectors.toList());
-            for (Action p : press) {
-                print("\nGame Buttons");
-                print(p.simplify() + " which could've " + (act.getType() == ActionType.DAMAGE ? "damaged" : "killed") + " " + act.getTarget() + " (" + act.getTargetRole().getIcon() + ")");
+        List<String> lines = new ArrayList<>();
+        for (Action press : presses) {
+            Button button = buttondb.getButton(press.getOther()[0]);
+            if (button.isSafe())
+                return;
+            String alias = button.getAlias();
+            StringBuilder result = new StringBuilder();
+            List<Action> damaged = damages.stream().filter(d -> d.getTime() >= press.getTime() && d.getTime() < press.getTime() + config.getButtonTimeout()).collect(Collectors.toList());
+            if (damaged.isEmpty())
+                continue;
+            result.append(press.simplify());
+            if (alias != null)
+                result.append(" (").append(alias).append(") ");
+            result.append("which could've harmed ");
+            Set<String> players = new HashSet<>();
+            for (Action act : damaged) {
+                if (players.contains(act.getTarget()))
+                    continue;
+                players.add(act.getTarget());
             }
+            result.append(players.size()).append(" ").append(MSG.plural("player", players.size()));
+            lines.add(result.toString());
+        }
+        if (!lines.isEmpty()) {
+            print("\nGame Buttons");
+
+            for (String line : lines)
+                print(line);
         }
     }
 
@@ -160,22 +194,17 @@ public class JBParser extends Parser {
 
     private boolean ceaseFire(TreeMap<Long, Boolean> times, long time) {
         List<Long> ts = new ArrayList<>(times.keySet());
-        for (int i = 0; i < ts.size(); i++) {
-            if (time >= ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1))) {
-                System.out.println("Returning " + times.get(ts.get(i)) + " for " + time);
+        for (int i = 0; i < ts.size(); i++)
+            if (time >= ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1)))
                 return times.get(ts.get(i));
-            }
-        }
-        System.out.println("Returning default for " + time);
         return false;
     }
 
     private int secondsToCease(TreeMap<Long, Boolean> times, long time) {
         List<Long> ts = new ArrayList<>(times.keySet());
-        for (int i = 0; i < ts.size(); i++) {
+        for (int i = 0; i < ts.size(); i++)
             if (time >= ts.get(i) && (i == ts.size() - 1 || time < ts.get(i + 1)))
-                return (int) (time - ts.get(i));
-        }
+                return times.get(ts.get(i)) ? -1 : (int) (time - ts.get(i));
         return 0;
     }
 
