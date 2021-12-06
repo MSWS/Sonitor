@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Action implements Comparable<Action> {
     private ActionType type;
-    private String player, target = null;
+    private String player, target;
     private Role playerRole, targetRole;
     private String[] other;
     private String line;
@@ -76,7 +76,7 @@ public class Action implements Comparable<Action> {
             return ActionType.PASS;
         } else if (line.contains("reskinned weapon_")) {
             return ActionType.RESKIN;
-        } else if (line.endsWith("was respawned for touching a worldspawn.")) {
+        } else if (line.contains("was respawned for touching")) {
             return ActionType.GHOST_RESPAWN;
         }
 
@@ -165,7 +165,11 @@ public class Action implements Comparable<Action> {
             case NADE:
                 return new String[]{line.substring(line.lastIndexOf(" ") + 1)};
             case RESKIN:
-                return new String[]{line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(), line.indexOf(" (previous owner:")), line.substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1)};
+                String weapon = line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(), line.indexOf(" ", line.lastIndexOf("weapon_")));
+                if (line.endsWith("(not previously owned)")) {
+                    return new String[]{weapon, "their own"};
+                }
+                return new String[]{weapon, line.substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1)};
             default:
                 return new String[]{};
         }
@@ -199,6 +203,10 @@ public class Action implements Comparable<Action> {
 
     public long getTime() {
         return time;
+    }
+
+    public String getTimeString() {
+        return (int) Math.floor((float) time / 60) + ":" + time % 60;
     }
 
     @Override

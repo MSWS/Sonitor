@@ -12,4 +12,16 @@ public enum Role {
     public String getIcon() {
         return icon;
     }
+
+    public boolean isCT() {
+        return this == GUARD || this == WARDEN;
+    }
+
+    public boolean isT() {
+        return this == PRISONER || this == REBEL;
+    }
+
+    public boolean isAlive() {
+        return isCT() || isT();
+    }
 }

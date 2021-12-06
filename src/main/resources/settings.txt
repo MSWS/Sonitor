@@ -1,0 +1,73 @@
+This is where the output file from CS:GO is located
+directory=C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\csgo\output.log
+
+If true, the application will check and output account ages
+doPlaytime=true
+
+This is your steam API Key, open the link if you do not know where to get it
+steamkey=https://steamcommunity.com/dev/apikey
+
+If true, we will cache the results during runtime, reducing API calls (RECOMMENDED TRUE)
+cache=true
+
+If true, we will save accurate ages over multiple executions, reducing API calls (RECOMMENDED TRUE)
+persist=true
+
+If you want to save logs to another file, specify the path here
+clonePath=
+
+Rate determines how often the output file is scanned, lower = less latency, but may consume more resources
+Numbers are in milliseconds, 1000 ms = 1 second
+rate=5000
+
+The header is printed after each status output in console, useful for distinguishing outputs
+header=\n\n\n=================================
+
+Some profiles have their visibility set to private, this application guesstimates based off other accounts that were made immediately before/after
+If false, we will try to fetch, if true, we will save the estimated guess
+persistGuessses=true
+
+Source sometimes fails to print the #end of a status command. If this happens,
+we will assume the status has ended after X milliseconds (-1 to disable)
+statusTimeout=5000
+
+Some people may break a rule and quickly disconnect. This checks if the same
+steam account joins with a name that is different than the one they had previously
+warnNameChages=true
+
+Jailbreak Specific Settings
+Log specific summarized actions
+Values: DAMAGE, KILL, BUTTON, WARDEN, VENTS, DROP_WEAPON, NADE, WARDEN_DEATH, PASS, FIRE, RESKIN, GHOST_RESPAWN
+Damage: Whenever a player damages another player
+Kill: Whenever a player kills another player
+Button: Whenever a player pushes a button
+Warden: Whenever a player takes warden
+Vents: Whenever a player breaks vents
+Drop_Weapon: Whenever a player drops a weapon
+Nade: Whenever a player throws a nade
+Warden_Death: Whenever the warden dies
+Pass: Whenever the warden passes
+Fire: Whenever the warden is fired
+Reskin: Whenever a player reskins a weapon
+Ghost_Respawn: Whenever a ghost respawns
+showTypes=KILL,WARDEN,WARDEN_DEATH,FIRE,PASS,RESKIN
+Cooldown for when a CT drops a gun and a T uses the same type of gun (seconds)
+gundropTimeout=10
+Cooldown for when a player pushes a button and a player takes damage from the world (seconds)
+buttonTimeout=5
+Cooldown for when a player throws a nade and a player takes damage from the world (seconds)
+nadeTimeout=10
+Time that prisoners have when a new warden is selected (seconds)
+wardenTimeout=5
+Max time round can go without a warden until it is a freeday (when warden passes/fired) (seconds)
+freeTime=10
+Show if a CT breaks vents before any prisoner does
+showEarlyVents=true
+Show if a CT kills/damages a prisoner when there is no warden, or within 3 seconds of a new warden
+showEarlyKills=true
+Show if a player pushes a button and other players take damage from the world within buttonTimeout
+showGameButtons=true
+Show if a player throws a nade and other players take damage from the world within nadeTimeout
+showNades=true
+Show if a CT drops a gun and a prisoner uses the same gun within gundropTimeout
+showGunPlants=true

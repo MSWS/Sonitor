@@ -35,6 +35,9 @@ public class JBParser extends Parser {
             return;
         }
         if (line.equals("--------------[ JAILBREAK LOGS END ]--------------")) {
+            Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
+
+            System.out.println("Jailbreak Logs");
             for (Action act : actions) {
                 if (!config.getActions().contains(act.getType()))
                     continue;
@@ -83,7 +86,42 @@ public class JBParser extends Parser {
                 }
             }
         }
-        System.out.println("Cease: " + cease);
+        Set<String> cts = new HashSet<>();
+        Set<String> ts = new HashSet<>();
+        for (Action act : actions) {
+            if (act.getPlayerRole().isT())
+                ts.add(act.getPlayer());
+            if (act.getTargetRole() != null && act.getTargetRole().isT())
+                ts.add(act.getTarget());
+            if (act.getPlayerRole().isCT())
+                cts.add(act.getPlayer());
+            if (act.getTargetRole() != null && act.getTargetRole().isCT())
+                cts.add(act.getTarget());
+        }
+        List<Action> deaths = actions.stream().filter(act -> act.getType() == ActionType.KILL).collect(Collectors.toList());
+        if (!deaths.isEmpty()) {
+            boolean ctWin = deaths.get(deaths.size() - 1).getPlayerRole().isCT();
+            List<Action> ctDeaths = deaths.stream().filter(act -> act.getTargetRole().isCT()).sorted().collect(Collectors.toList());
+            List<Action> tDeaths = deaths.stream().filter(act -> act.getTargetRole().isT()).sorted().collect(Collectors.toList());
+            Action lastGuard, lastRequest = null;
+            if (tDeaths.size() > 2 && ts.size() - tDeaths.size() <= 2) {
+                lastRequest = tDeaths.get(tDeaths.size() - 2);
+                cease.put(lastRequest.getTime(), false);
+                System.out.println(lastRequest.getTarget() + " died, activating last request at " + lastRequest.getTimeString());
+            }
+            if (ctDeaths.size() > 2 && cts.size() - ctDeaths.size() <= 1) {
+                // There was one CT at the end of the round
+                // If CT won, get most recent death (the last CT didn't die), otherwise get second most recent death
+                lastGuard = ctDeaths.get(ctDeaths.size() - (ctWin ? 1 : 2));
+                if (lastRequest == null || lastRequest.getTime() > lastGuard.getTime()) {
+                    cease.put(lastGuard.getTime(), false);
+                    System.out.println(lastGuard.getTarget() + " died, activating last guard at " + lastGuard.getTimeString());
+                }
+            }
+
+        }
+
+
         List<Action> badCombat = actions.stream().filter(act -> act.getType() == ActionType.DAMAGE || act.getType() == ActionType.KILL)
                 .filter(act -> act.getPlayerRole() == Role.GUARD || act.getPlayerRole() == Role.WARDEN).filter(act -> act.getTargetRole() == Role.PRISONER)
                 .filter(act -> ceaseFire(cease, act.getTime())).collect(Collectors.toList());
@@ -93,7 +131,7 @@ public class JBParser extends Parser {
         for (Action act : badCombat) {
             int seconds = secondsToCease(cease, act.getTime());
             if (seconds == -1) {
-                print(act.simplify() + " while there wasn't a warden.");
+                print(act.simplify() + " with no warden.");
                 continue;
             }
             print(act.simplify() + " within " + seconds + MSG.plural("second", seconds) + " of new warden");
@@ -125,22 +163,30 @@ public class JBParser extends Parser {
             Button button = buttondb.getButton(press.getOther()[0]);
             if (button.isSafe())
                 return;
-            String alias = button.getAlias();
             StringBuilder result = new StringBuilder();
             List<Action> damaged = damages.stream().filter(d -> d.getTime() >= press.getTime() && d.getTime() < press.getTime() + config.getButtonTimeout()).collect(Collectors.toList());
             if (damaged.isEmpty())
                 continue;
             result.append(press.simplify());
-            if (alias != null)
-                result.append(" (").append(alias).append(") ");
-            result.append("which could've harmed ");
+            result.append(" which could've harmed ");
             Set<String> players = new HashSet<>();
+            int t = 0, ct = 0;
             for (Action act : damaged) {
                 if (players.contains(act.getTarget()))
                     continue;
                 players.add(act.getTarget());
+                if (act.getTargetRole().isT())
+                    t++;
+                if (act.getTargetRole().isCT())
+                    ct++;
             }
-            result.append(players.size()).append(" ").append(MSG.plural("player", players.size()));
+            if (t > 0) {
+                result.append(t).append(" ").append(MSG.plural("Prisoner", t));
+                if (ct > 0)
+                    result.append(" and ");
+            }
+            if (ct > 0)
+                result.append(ct).append(" ").append(MSG.plural("CT", ct));
             lines.add(result.toString());
         }
         if (!lines.isEmpty()) {
@@ -155,7 +201,8 @@ public class JBParser extends Parser {
         List<Action> nades = actions.stream().filter(act -> act.getType() == ActionType.NADE).collect(Collectors.toList());
 
         for (Action act : actions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList())) {
-            List<Action> press = nades.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout()).collect(Collectors.toList());
+            List<Action> press = nades.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout())
+                    .filter(p -> !act.getTarget().equals(p.getPlayer())).collect(Collectors.toList());
             for (Action p : press) {
                 print("\nNade Disruptions");
                 print(p.simplify() + " which could've disrupted " + act.getTarget() + " (" + act.getTargetRole().getIcon() + ")");
@@ -174,11 +221,11 @@ public class JBParser extends Parser {
             drops.put(gun, related);
         }
 
-        for (Action act : actions.stream().filter(act -> act.getType() == ActionType.DAMAGE).collect(Collectors.toList())) {
+        for (Action act : actions.stream().filter(act -> act.getType() == ActionType.DAMAGE && act.getPlayerRole().isT()).collect(Collectors.toList())) {
             List<Action> ds = guns.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getGunTimeout() && p.getOther()[0].equals(act.getOther()[1])).collect(Collectors.toList());
             for (Action p : ds) {
                 print("\nGun Plants");
-                print(p.simplify() + " and " + act.getTarget() + " (" + act.getTargetRole().getIcon() + ") used one shortly after");
+                print(p.simplify() + " and " + act.getPlayer() + " (" + act.getPlayerRole().getIcon() + ") used one shortly after");
             }
         }
     }

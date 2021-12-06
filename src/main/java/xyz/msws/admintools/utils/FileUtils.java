@@ -1,9 +1,8 @@
 package xyz.msws.admintools.utils;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import xyz.msws.admintools.Main;
+
+import java.io.*;
 
 public class FileUtils {
     public static String readFile(File f) {
@@ -14,6 +13,27 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void saveResource(String name) {
+        File file = new File(name);
+        try {
+            if (file.createNewFile() || file.exists()) {
+                try (InputStream io = Main.class.getClassLoader().getResourceAsStream(name)) {
+                    if (io == null)
+                        throw new NullPointerException(name + " not found");
+                    FileWriter write = new FileWriter(file);
+                    try (InputStreamReader reader = new InputStreamReader(io); BufferedReader br = new BufferedReader(reader)) {
+                        String line;
+                        while ((line = br.readLine()) != null)
+                            write.write(line + "\n");
+                    }
+                    write.close();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

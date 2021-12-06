@@ -13,3 +13,6 @@ piano_key_Gs:true:Piano G#
 sltm_lever:true:
 sltm_2_lever:true:
 cellbutton:true:
+Jumprope_Stop_Button:true:Jumprope Stop
+cellbutton:true:Cell Button
+deathcrate_stop:true:Deathcrate Stop

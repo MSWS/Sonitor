@@ -62,12 +62,6 @@ public class Monitor extends TimerTask {
     }
 
     private boolean setupFiles() {
-        try {
-            settings.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         config = new FileConfig(settings);
 
         if (config.getOutputPath() == null) {
