@@ -118,7 +118,6 @@ public class JBParser extends Parser {
                     System.out.println(lastGuard.getTarget() + " died, activating last guard at " + lastGuard.getTimeString());
                 }
             }
-
         }
 
 

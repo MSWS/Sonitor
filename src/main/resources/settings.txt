@@ -1,5 +1,5 @@
 This is where the output file from CS:GO is located
-directory=C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\csgo\output.log
+directory=C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\csgo\
 
 If true, the application will check and output account ages
 doPlaytime=true
