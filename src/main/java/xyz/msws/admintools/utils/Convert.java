@@ -41,7 +41,7 @@ public class Convert {
 
     enum TimeUnit {
         MILLISECONDS(1), SECONDS(1000), MINUTES(1000 * 60), HOURS(1000 * 60 * 60), DAYS(1000 * 60 * 60 * 24), MONTHS(1000L * 60 * 60 * 24 * 30), YEARS(1000L * 60 * 60 * 24 * 30 * 12);
-        private long ms;
+        private final long ms;
 
         TimeUnit(long ms) {
             this.ms = ms;

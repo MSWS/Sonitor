@@ -48,7 +48,7 @@ public class FileConfig extends Config {
                 String[] acts = getValue(line, "showTypes=").split(",");
                 actions.clear();
                 for (String s : acts)
-                    actions.add(ActionType.valueOf(s.toUpperCase()));
+                    actions.add(JailActionType.valueOf(s.toUpperCase()));
             } else if (line.startsWith("gundropTimeout=")) {
                 gunTimeout = getValue(line, "gundropTimeout=", Integer.class);
             } else if (line.startsWith("nadeTimeout=")) {

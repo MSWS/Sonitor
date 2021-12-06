@@ -8,7 +8,7 @@ public abstract class Config {
     protected boolean cache = true, persistGuesses = true, persistKnowns = true, warnNameChanges = true;
     protected String header = "";
     protected String outputPath = null, apiKey = null, clonePath = null;
-    protected EnumSet<ActionType> actions = EnumSet.of(ActionType.KILL, ActionType.WARDEN, ActionType.WARDEN_DEATH, ActionType.FIRE, ActionType.PASS, ActionType.RESKIN);
+    protected EnumSet<JailActionType> actions = EnumSet.of(JailActionType.KILL, JailActionType.WARDEN, JailActionType.WARDEN_DEATH, JailActionType.FIRE, JailActionType.PASS, JailActionType.RESKIN);
     protected int gunTimeout = 10, buttonTimeout = 5, nadeTimeout = 10, wardenTimeout = 5, freeTime = 10;
     protected boolean showEarlyVents = true, showEarlyKills = true, showGameButtons = true, showNades = true, showGunPlants = true;
     protected boolean doJailbreak = true, doPlaytime = true;
@@ -42,7 +42,7 @@ public abstract class Config {
     }
 
 
-    public EnumSet<ActionType> getActions() {
+    public EnumSet<JailActionType> getActions() {
         return actions;
     }
 

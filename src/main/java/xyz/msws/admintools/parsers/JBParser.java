@@ -21,24 +21,24 @@ public class JBParser extends Parser {
         this.buttondb = new ButtonDatabase(buttons);
     }
 
-    private final List<Action> actions = new ArrayList<>();
+    private final List<JailbreakAction> jailbreakActions = new ArrayList<>();
     private final Pattern pattern = Pattern.compile("^\\[\\d\\d:\\d\\d]\s");
 
-    private final EnumSet<ActionType> wardenRelated = EnumSet.of(ActionType.WARDEN, ActionType.WARDEN_DEATH, ActionType.PASS, ActionType.FIRE);
+    private final EnumSet<JailActionType> wardenRelated = EnumSet.of(JailActionType.WARDEN, JailActionType.WARDEN_DEATH, JailActionType.PASS, JailActionType.FIRE);
 
     Set<String> lines = new HashSet<>();
 
     @Override
     public void parse(String line) {
         if (line.equals("----------------[ JAILBREAK LOGS ]----------------")) {
-            actions.clear();
+            jailbreakActions.clear();
             return;
         }
         if (line.equals("--------------[ JAILBREAK LOGS END ]--------------")) {
             Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
 
             System.out.println("Jailbreak Logs");
-            for (Action act : actions) {
+            for (JailbreakAction act : jailbreakActions) {
                 if (!config.getActions().contains(act.getType()))
                     continue;
                 System.out.println(act.simplify());
@@ -55,7 +55,7 @@ public class JBParser extends Parser {
             if (config.showGunPlants())
                 checkGuns();
             checkSpectator();
-            actions.clear();
+            jailbreakActions.clear();
             lines.clear();
             return;
         }
@@ -67,15 +67,15 @@ public class JBParser extends Parser {
         if (!pattern.matcher(line).lookingAt())
             return;
 
-        Action action = new Action(line);
-        actions.add(action);
+        JailbreakAction jailbreakAction = new JailbreakAction(line);
+        jailbreakActions.add(jailbreakAction);
     }
 
     private void checkGuardTime() {
-        List<Action> allWarden = actions.stream().filter(act -> wardenRelated.contains(act.getType())).sorted().collect(Collectors.toList());
+        List<JailbreakAction> allWarden = jailbreakActions.stream().filter(act -> wardenRelated.contains(act.getType())).sorted().collect(Collectors.toList());
         TreeMap<Long, Boolean> cease = new TreeMap<>();
 
-        for (Action act : allWarden) {
+        for (JailbreakAction act : allWarden) {
             switch (act.getType()) {
                 case WARDEN -> cease.put(act.getTime() + config.getWardenTimeout(), false);
                 case WARDEN_DEATH -> cease.put(act.getTime(), true);
@@ -88,7 +88,7 @@ public class JBParser extends Parser {
         }
         Set<String> cts = new HashSet<>();
         Set<String> ts = new HashSet<>();
-        for (Action act : actions) {
+        for (JailbreakAction act : jailbreakActions) {
             if (act.getPlayerRole().isT())
                 ts.add(act.getPlayer());
             if (act.getTargetRole() != null && act.getTargetRole().isT())
@@ -98,12 +98,12 @@ public class JBParser extends Parser {
             if (act.getTargetRole() != null && act.getTargetRole().isCT())
                 cts.add(act.getTarget());
         }
-        List<Action> deaths = actions.stream().filter(act -> act.getType() == ActionType.KILL).collect(Collectors.toList());
+        List<JailbreakAction> deaths = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.KILL).collect(Collectors.toList());
         if (!deaths.isEmpty()) {
             boolean ctWin = deaths.get(deaths.size() - 1).getPlayerRole().isCT();
-            List<Action> ctDeaths = deaths.stream().filter(act -> act.getTargetRole().isCT()).sorted().collect(Collectors.toList());
-            List<Action> tDeaths = deaths.stream().filter(act -> act.getTargetRole().isT()).sorted().collect(Collectors.toList());
-            Action lastGuard, lastRequest = null;
+            List<JailbreakAction> ctDeaths = deaths.stream().filter(act -> act.getTargetRole().isCT()).sorted().collect(Collectors.toList());
+            List<JailbreakAction> tDeaths = deaths.stream().filter(act -> act.getTargetRole().isT()).sorted().collect(Collectors.toList());
+            JailbreakAction lastGuard, lastRequest = null;
             if (tDeaths.size() > 2 && ts.size() - tDeaths.size() <= 2) {
                 lastRequest = tDeaths.get(tDeaths.size() - 2);
                 cease.put(lastRequest.getTime(), false);
@@ -121,13 +121,13 @@ public class JBParser extends Parser {
         }
 
 
-        List<Action> badCombat = actions.stream().filter(act -> act.getType() == ActionType.DAMAGE || act.getType() == ActionType.KILL)
+        List<JailbreakAction> badCombat = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.DAMAGE || act.getType() == JailActionType.KILL)
                 .filter(act -> act.getPlayerRole() == Role.GUARD || act.getPlayerRole() == Role.WARDEN).filter(act -> act.getTargetRole() == Role.PRISONER)
                 .filter(act -> ceaseFire(cease, act.getTime())).collect(Collectors.toList());
 
         if (!badCombat.isEmpty())
             print("\nGuard Freekills");
-        for (Action act : badCombat) {
+        for (JailbreakAction act : badCombat) {
             int seconds = secondsToCease(cease, act.getTime());
             if (seconds == -1) {
                 print(act.simplify() + " with no warden.");
@@ -138,9 +138,9 @@ public class JBParser extends Parser {
     }
 
     private void checkGuardVents() {
-        List<Action> breaks = new ArrayList<>();
-        for (Action act : actions) {
-            if (act.getType() != ActionType.VENTS)
+        List<JailbreakAction> breaks = new ArrayList<>();
+        for (JailbreakAction act : jailbreakActions) {
+            if (act.getType() != JailActionType.VENTS)
                 continue;
             if (act.getPlayerRole() == Role.PRISONER)
                 break;
@@ -148,29 +148,29 @@ public class JBParser extends Parser {
         }
         if (!breaks.isEmpty())
             print("\nEarly Guard Vents");
-        for (Action act : breaks) {
+        for (JailbreakAction act : breaks) {
             print(act.simplify() + " before any prisoner did");
         }
     }
 
     private void checkWorldButtons() {
-        List<Action> presses = actions.stream().filter(act -> act.getType() == ActionType.BUTTON).collect(Collectors.toList());
-        List<Action> damages = actions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList());
+        List<JailbreakAction> presses = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.BUTTON).collect(Collectors.toList());
+        List<JailbreakAction> damages = jailbreakActions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList());
 
         List<String> lines = new ArrayList<>();
-        for (Action press : presses) {
+        for (JailbreakAction press : presses) {
             Button button = buttondb.getButton(press.getOther()[0]);
             if (button.isSafe())
                 return;
             StringBuilder result = new StringBuilder();
-            List<Action> damaged = damages.stream().filter(d -> d.getTime() >= press.getTime() && d.getTime() < press.getTime() + config.getButtonTimeout()).collect(Collectors.toList());
+            List<JailbreakAction> damaged = damages.stream().filter(d -> d.getTime() >= press.getTime() && d.getTime() < press.getTime() + config.getButtonTimeout()).collect(Collectors.toList());
             if (damaged.isEmpty())
                 continue;
             result.append(press.simplify());
             result.append(" which could've harmed ");
             Set<String> players = new HashSet<>();
             int t = 0, ct = 0;
-            for (Action act : damaged) {
+            for (JailbreakAction act : damaged) {
                 if (players.contains(act.getTarget()))
                     continue;
                 players.add(act.getTarget());
@@ -197,12 +197,12 @@ public class JBParser extends Parser {
     }
 
     private void checkNades() {
-        List<Action> nades = actions.stream().filter(act -> act.getType() == ActionType.NADE).collect(Collectors.toList());
+        List<JailbreakAction> nades = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.NADE).collect(Collectors.toList());
 
-        for (Action act : actions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList())) {
-            List<Action> press = nades.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout())
+        for (JailbreakAction act : jailbreakActions.stream().filter(act -> act.getPlayerRole() == Role.WORLD).collect(Collectors.toList())) {
+            List<JailbreakAction> press = nades.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getNadeTimeout())
                     .filter(p -> !act.getTarget().equals(p.getPlayer())).collect(Collectors.toList());
-            for (Action p : press) {
+            for (JailbreakAction p : press) {
                 print("\nNade Disruptions");
                 print(p.simplify() + " which could've disrupted " + act.getTarget() + " (" + act.getTargetRole().getIcon() + ")");
             }
@@ -210,19 +210,19 @@ public class JBParser extends Parser {
     }
 
     private void checkGuns() {
-        Map<String, List<Action>> drops = new HashMap<>();
+        Map<String, List<JailbreakAction>> drops = new HashMap<>();
 
-        List<Action> guns = actions.stream().filter(act -> act.getType() == ActionType.DROP_WEAPON).collect(Collectors.toList());
-        for (Action act : guns) {
+        List<JailbreakAction> guns = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.DROP_WEAPON).collect(Collectors.toList());
+        for (JailbreakAction act : guns) {
             String gun = act.getOther()[0];
-            List<Action> related = drops.getOrDefault(gun, new ArrayList<>());
+            List<JailbreakAction> related = drops.getOrDefault(gun, new ArrayList<>());
             related.add(act);
             drops.put(gun, related);
         }
 
-        for (Action act : actions.stream().filter(act -> act.getType() == ActionType.DAMAGE && act.getPlayerRole().isT()).collect(Collectors.toList())) {
-            List<Action> ds = guns.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getGunTimeout() && p.getOther()[0].equals(act.getOther()[1])).collect(Collectors.toList());
-            for (Action p : ds) {
+        for (JailbreakAction act : jailbreakActions.stream().filter(act -> act.getType() == JailActionType.DAMAGE && act.getPlayerRole().isT()).collect(Collectors.toList())) {
+            List<JailbreakAction> ds = guns.stream().filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getGunTimeout() && p.getOther()[0].equals(act.getOther()[1])).collect(Collectors.toList());
+            for (JailbreakAction p : ds) {
                 print("\nGun Plants");
                 print(p.simplify() + " and " + act.getPlayer() + " (" + act.getPlayerRole().getIcon() + ") used one shortly after");
             }
@@ -230,9 +230,9 @@ public class JBParser extends Parser {
     }
 
     private void checkSpectator() {
-        List<Action> damage = actions.stream().filter(act -> act.getType() == ActionType.DAMAGE || act.getType() == ActionType.KILL)
+        List<JailbreakAction> damage = jailbreakActions.stream().filter(act -> act.getType() == JailActionType.DAMAGE || act.getType() == JailActionType.KILL)
                 .filter(act -> act.getPlayerRole() == Role.SPECTATOR).collect(Collectors.toList());
-        for (Action act : damage) {
+        for (JailbreakAction act : damage) {
             print("\nSpectator Exploiters");
             print(act.simplify() + " as a spectator");
         }

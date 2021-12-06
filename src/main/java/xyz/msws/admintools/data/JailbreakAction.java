@@ -3,8 +3,11 @@ package xyz.msws.admintools.data;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Action implements Comparable<Action> {
-    private ActionType type;
+/**
+ * Represents a line in Jailbreak Logs
+ */
+public class JailbreakAction implements Comparable<JailbreakAction> {
+    private JailActionType type;
     private String player, target;
     private Role playerRole, targetRole;
     private String[] other;
@@ -16,7 +19,7 @@ public class Action implements Comparable<Action> {
 
     private long time;
 
-    public Action(String line) {
+    public JailbreakAction(String line) {
         this.line = line;
         this.type = findActionType();
 
@@ -45,7 +48,7 @@ public class Action implements Comparable<Action> {
         return targetRole;
     }
 
-    public ActionType getType() {
+    public JailActionType getType() {
         return type;
     }
 
@@ -53,31 +56,31 @@ public class Action implements Comparable<Action> {
         return other;
     }
 
-    private ActionType findActionType() {
+    private JailActionType findActionType() {
         if (line.endsWith("is now warden")) {
-            return ActionType.WARDEN;
+            return JailActionType.WARDEN;
         } else if (line.endsWith("broke a vent or wall")) {
-            return ActionType.VENTS;
+            return JailActionType.VENTS;
         } else if (line.contains(") pressed button '")) {
-            return ActionType.BUTTON;
+            return JailActionType.BUTTON;
         } else if (line.contains("threw a") && (line.endsWith("smoke") || line.endsWith("grenade") || line.endsWith("flash") || line.endsWith("decoy") || line.endsWith("molotov"))) {
-            return ActionType.NADE;
+            return JailActionType.NADE;
         } else if (line.contains("hurt") && line.contains("with") && line.contains("damage (")) {
-            return ActionType.DAMAGE;
+            return JailActionType.DAMAGE;
         } else if (line.contains("has died and is no longer warden")) {
-            return ActionType.WARDEN_DEATH;
+            return JailActionType.WARDEN_DEATH;
         } else if (line.contains("killed ")) {
-            return ActionType.KILL;
+            return JailActionType.KILL;
         } else if (line.contains("dropped the weapon")) {
-            return ActionType.DROP_WEAPON;
+            return JailActionType.DROP_WEAPON;
         } else if (line.endsWith("has been fired by an admin")) {
-            return ActionType.FIRE;
+            return JailActionType.FIRE;
         } else if (line.endsWith("has passed warden")) {
-            return ActionType.PASS;
+            return JailActionType.PASS;
         } else if (line.contains("reskinned weapon_")) {
-            return ActionType.RESKIN;
+            return JailActionType.RESKIN;
         } else if (line.contains("was respawned for touching")) {
-            return ActionType.GHOST_RESPAWN;
+            return JailActionType.GHOST_RESPAWN;
         }
 
         throw new IllegalArgumentException("Invalid line: " + line);
@@ -111,7 +114,7 @@ public class Action implements Comparable<Action> {
         playerStart = 8;
         playerEnd = playerRoleStart - (world ? -5 : 2);
 
-        if (type != ActionType.DAMAGE && type != ActionType.KILL)
+        if (type != JailActionType.DAMAGE && type != JailActionType.KILL)
             return;
 
         for (Role role : Role.values()) {
@@ -210,7 +213,7 @@ public class Action implements Comparable<Action> {
     }
 
     @Override
-    public int compareTo(Action o) {
+    public int compareTo(JailbreakAction o) {
         return (int) (this.getTime() - o.getTime());
     }
 }
