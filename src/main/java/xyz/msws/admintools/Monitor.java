@@ -143,7 +143,7 @@ public class Monitor extends TimerTask {
             logFile = lines.get(index).substring(lines.get(index).indexOf(" ") + 1);
         }
 
-        if (!output.exists())
+        if (!output.exists() || output.isDirectory())
             output = new File(parent, logFile);
         if (!output.exists()) {
             output = new File(logFile);

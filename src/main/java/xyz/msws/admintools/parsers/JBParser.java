@@ -65,6 +65,10 @@ public class JBParser extends Parser {
 
         if (!line.startsWith("["))
             return;
+        if (line.length() < 9)
+            return;
+        if (line.charAt(8) == '[')
+            return;
 
         if (!pattern.matcher(line).lookingAt())
             return;
