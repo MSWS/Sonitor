@@ -33,7 +33,7 @@ public class Monitor extends TimerTask {
             parsers.add(new PlaytimeParser(this));
         if (config.doJailbreak())
             parsers.add(new JBParser(this));
-        timer.schedule(this, config.getRate(), config.getRate());
+        timer.schedule(this, 0, config.getRate());
     }
 
     public void run() {
@@ -82,6 +82,7 @@ public class Monitor extends TimerTask {
         // Default Computer
         directories.add("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
         directories.add("C:\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
+        directories.add("C:\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
 
         // Mac
         directories.add("~/Library/Application Support/Steam/steamapps/common/Counter-Strike Global Offensive/csgo");
@@ -143,12 +144,16 @@ public class Monitor extends TimerTask {
             logFile = lines.get(index).substring(lines.get(index).indexOf(" ") + 1);
         }
 
-        if (!output.exists() || output.isDirectory())
-            output = new File(parent, logFile);
+        if (output.isDirectory()) {
+            System.out.println("Supplied path is a folder, searching for " + logFile);
+            output = new File(output, logFile);
+            if (!output.exists())
+                output = new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
+        }
         if (!output.exists()) {
-            output = new File(logFile);
+            output = new File(parent, logFile);
             if (!output.exists()) {
-                System.out.println("Could not locate " + output.getName() + " at " + output.getAbsolutePath());
+                System.out.println("Could not locate " + output.getName());
                 System.out.println("If you have not run CS:GO yet, do so and then re-run this application");
                 System.out.println("If CS:GO has already been run, ensure the \"con_logfile\" variable is");
                 System.out.println("set to " + logFile + " in your console by running:");
@@ -157,6 +162,7 @@ public class Monitor extends TimerTask {
             }
         }
 
+        System.out.println("Using " + output.getAbsolutePath());
         if (config.getClonePath() != null && !config.getClonePath().isEmpty())
             clone = new File(config.getClonePath());
         return true;
