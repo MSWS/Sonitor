@@ -29,7 +29,7 @@ clonePath=
 
 Rate determines how often the output file is scanned, lower = less latency, but may consume more resources
 Numbers are in milliseconds, 1000 ms = 1 second
-rate=5000
+rate=10000
 
 The header is printed after each status output in console, useful for distinguishing outputs
 header=\n\n\n\n\n\n\n============================================
@@ -43,7 +43,7 @@ we will assume the status has ended after X milliseconds (-1 to disable)
 statusTimeout=5000
 
 Some people may break a rule and quickly disconnect. This checks if the same
-steam account joins with a name that is different than the one they had previously
+steam account joins with a name that is different from the one they had previously
 warnNameChages=true
 
 Jailbreak Specific Settings
