@@ -39,4 +39,4 @@ this happens when you type `status` in the console. For Jailbreak Logs, these tr
 
 ### Examples
 
-![https://i.imgur.com/XqrZMFu.png](Image)
+![Image](https://i.imgur.com/XqrZMFu.png)
