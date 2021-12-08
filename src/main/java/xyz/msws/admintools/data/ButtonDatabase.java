@@ -23,9 +23,10 @@ public class ButtonDatabase {
         if (db != null)
             throw new IllegalStateException("ButtonDatabase already initialized");
         db = this;
-        FileUtils.saveResource("buttons.txt");
+        if (!file.exists())
+            FileUtils.saveResource("buttons.txt");
         for (String line : FileUtils.readFile(file).split("\n")) {
-            if (line.split(":").length != 3 || (line.split(":").length == 2) && line.endsWith(":"))
+            if (line.split(":").length != 3 && (!(line.split(":").length == 2 && line.endsWith(":"))))
                 continue;
             Button b = new Button(line);
             buttons.put(b.getName(), b);

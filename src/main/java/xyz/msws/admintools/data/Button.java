@@ -9,11 +9,10 @@ public class Button {
 
     public Button(String line) {
         String[] split = line.split(":");
-        if (split.length != 3)
-            throw new IllegalArgumentException("Invalid button format: " + line);
         name = split[0];
         safe = !split[1].isBlank() && Boolean.parseBoolean(split[1]);
-        alias = split[2];
+
+        alias = split.length == 3 ? split[2] : "";
     }
 
     public Button(String name, boolean safe) {
