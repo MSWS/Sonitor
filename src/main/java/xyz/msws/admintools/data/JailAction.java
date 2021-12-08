@@ -147,18 +147,10 @@ public class JailAction implements Comparable<JailAction> {
         return line.substring(targetStart, targetEnd);
     }
 
-    private JailRole findPlayerRole() {
-        return JailRole.valueOf(line.substring(playerRoleStart + 1, playerRoleEnd - 1).toUpperCase());
-    }
-
-    private JailRole findTargetRole() {
-        if (targetRoleStart == -1 || targetRoleEnd == -1)
-            return null;
-        return JailRole.valueOf(line.substring(targetRoleStart + 1, targetRoleEnd - 1).toUpperCase());
-    }
-
     private String[] findOther() {
         switch (type) {
+            case KILL:
+                return new String[]{targetRole.getIcon()};
             case DAMAGE:
                 return new String[]{line.substring(line.lastIndexOf("with ") + "with ".length(), line.lastIndexOf("damage") - 1), line.substring(line.lastIndexOf("(") + 1, line.length() - 1)};
             case BUTTON:
