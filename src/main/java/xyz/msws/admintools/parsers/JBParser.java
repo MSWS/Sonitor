@@ -115,7 +115,6 @@ public class JBParser extends Parser {
             if (tDeaths.size() > 2 && ts.size() - tDeaths.size() <= 2) {
                 lastRequest = tDeaths.get(tDeaths.size() - 2);
                 cease.put(lastRequest.getTime(), false);
-                System.out.println(lastRequest.getTarget() + " died, activating last request at " + lastRequest.getTimeString());
             }
             if (ctDeaths.size() > 2 && cts.size() - ctDeaths.size() <= 1) {
                 // There was one CT at the end of the round
@@ -126,6 +125,9 @@ public class JBParser extends Parser {
                     System.out.println(lastGuard.getTarget() + " died, activating last guard at " + lastGuard.getTimeString());
                 }
             }
+            // Last request always after last guard
+            if (lastRequest != null)
+                System.out.println(lastRequest.getTarget() + " died, activating last request at " + lastRequest.getTimeString());
         }
 
 
