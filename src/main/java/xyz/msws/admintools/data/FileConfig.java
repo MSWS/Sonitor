@@ -73,6 +73,12 @@ public class FileConfig extends Config {
                 freeTime = getValue(line, "freeTime=", Integer.class);
             } else if (line.startsWith("doJailbreak=")) {
                 doJailbreak = getValue(line, "doJailbreak=", Boolean.class);
+            } else if (line.startsWith("cacheGametimes=")) {
+                cacheGametimes = getValue(line, "cacheGametimes=", Boolean.class);
+            } else if (line.startsWith("requestGametimes=")) {
+                cacheGametimes = getValue(line, "requestGametimes=", Boolean.class);
+            } else if (line.startsWith("appId=")) {
+                appId = getValue(line, "appId=", Integer.class);
             }
         }
     }

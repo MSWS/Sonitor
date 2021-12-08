@@ -1,17 +1,25 @@
 This is where the output file from CS:GO is located
 directory=C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\csgo\
 
+This is your steam API Key, open the link if you do not know where to get it
+steamkey=https://steamcommunity.com/dev/apikey
+
+This is the game's application ID. CS:GO's is 730, CS:S' is 240
+appId=730
+
 If true, the application will check and output account ages
 doPlaytime=true
 
 If true, the application will check Jailbreak Logs
 doJailbreak=true
 
-This is your steam API Key, open the link if you do not know where to get it
-steamkey=https://steamcommunity.com/dev/apikey
-
 If true, we will cache the results during runtime, reducing API calls (RECOMMENDED TRUE)
 cache=true
+
+If true, we will request players' playtime
+requestGametimes = true
+If true, we will cache game playtime during runtime, reducing API calls (RECOMMENDED TRUE)
+cacheGametimes=true
 
 If true, we will save accurate ages over multiple executions, reducing API calls (RECOMMENDED TRUE)
 persist=true
@@ -24,7 +32,7 @@ Numbers are in milliseconds, 1000 ms = 1 second
 rate=5000
 
 The header is printed after each status output in console, useful for distinguishing outputs
-header=\n\n\n=================================
+header=\n\n\n\n\n\n\n============================================
 
 Some profiles have their visibility set to private, this application guesstimates based off other accounts that were made immediately before/after
 If false, we will try to fetch, if true, we will save the estimated guess

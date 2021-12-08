@@ -70,7 +70,7 @@ public class Monitor extends TimerTask {
             directories.add(config.getOutputPath());
             if (output != null) {
                 directories.add(output.getAbsolutePath());
-                if (output.exists())
+                if (output.exists() && output.getParentFile() != null)
                     directories.add(output.getParentFile().getAbsolutePath());
             }
         }
@@ -100,7 +100,7 @@ public class Monitor extends TimerTask {
             parent = new File(dir);
             if (parent.isFile())
                 parent = parent.getParentFile();
-            if (parent.exists()) {
+            if (parent != null && parent.exists()) {
                 System.out.println("Located CS:GO directory at " + parent.getAbsolutePath());
                 break;
             }

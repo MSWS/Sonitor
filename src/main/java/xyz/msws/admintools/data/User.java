@@ -1,5 +1,12 @@
 package xyz.msws.admintools.data;
 
+import com.lukaspradel.steamapi.core.exception.SteamApiException;
+import com.lukaspradel.steamapi.data.json.playerstats.GetUserStatsForGame;
+import com.lukaspradel.steamapi.data.json.playerstats.Playerstats;
+import com.lukaspradel.steamapi.data.json.playerstats.Stat;
+import com.lukaspradel.steamapi.webapi.client.SteamWebApiClient;
+import com.lukaspradel.steamapi.webapi.request.SteamWebApiRequest;
+import com.lukaspradel.steamapi.webapi.request.builders.SteamWebApiRequestFactory;
 import xyz.msws.admintools.utils.Convert;
 
 /**
@@ -10,8 +17,9 @@ import xyz.msws.admintools.utils.Convert;
 public class User implements Comparable<User> {
     private String serverName, steamId;
     private int userId;
-    private long steamCom, date = -1;
+    private long steamCom, date = -1, playtime = -1;
     private boolean isEstimate = false;
+    private Playerstats stats;
 
     public User(int userid, String serverName, long steam) {
         this.userId = userid;
@@ -43,6 +51,37 @@ public class User implements Comparable<User> {
 
     public int getUserId() {
         return userId;
+    }
+
+    public void setUserId(int id) {
+        this.userId = id;
+    }
+
+    public void getStats(SteamWebApiClient client, Config config) {
+        if (!config.requestGametimes())
+            return;
+        if (stats == null || !config.cacheGametimes()) {
+            SteamWebApiRequest gametime = SteamWebApiRequestFactory.createGetUserStatsForGameRequest(config.getAppId(), steamCom + "");
+            GetUserStatsForGame result;
+            try {
+                result = client.processRequest(gametime);
+                this.stats = result.getPlayerstats();
+            } catch (SteamApiException ignored) {
+            }
+        }
+    }
+
+    public long getPlaytime() {
+        if (stats == null)
+            return -1;
+        if (playtime != -1)
+            return playtime;
+        Stat stat = stats.getStats().stream().filter(s -> s.getName().equals("total_time_played")).findFirst().orElse(null);
+        if (stat == null)
+            return -1;
+        playtime = (long) stat.getValue() * 1000;
+
+        return playtime; // Time is in seconds
     }
 
     public void setDate(long date) {

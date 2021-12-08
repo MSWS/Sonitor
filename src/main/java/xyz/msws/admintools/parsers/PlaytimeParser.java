@@ -29,6 +29,7 @@ public class PlaytimeParser extends Parser {
     private final File cacheFile = new File(master, "cache.txt");
     private final Map<String, String> nameCache = new HashMap<>();
     private final Map<Long, Long> userCache = new HashMap<>();
+    private final Map<String, User> newCache = new HashMap<>();
 
     public PlaytimeParser(Monitor monitor) {
         super(monitor);
@@ -83,8 +84,21 @@ public class PlaytimeParser extends Parser {
             if (config.getHeader() != null)
                 Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
             List<String> changes = new ArrayList<>();
+            int longest = 0;
             for (User user : users) {
-                System.out.printf("#%d %s: %s\n", user.getUserId(), user.getServerName(), (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate()));
+                String ls = "#%d %s";
+                String lr = String.format(ls, user.getUserId(), user.getServerName());
+                if (lr.length() + 1 > longest)
+                    longest = lr.length() + 1;
+            }
+            for (User user : users) {
+                String ls = "#%d %s";
+                ls = String.format(ls, user.getUserId(), user.getServerName());
+                ls += " ".repeat(Math.max(longest - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                if (user.getPlaytime() != -1)
+                    ls += " ".repeat(Math.max(longest - ls.length(), 0)) + " (" + Convert.timeToStr(user.getPlaytime()) + ")";
+                System.out.println(ls);
+
                 if (config.warnNameChanges()) {
                     String currentName = user.getServerName();
                     nameCache.putIfAbsent(user.getSteamId(), currentName);
@@ -118,10 +132,16 @@ public class PlaytimeParser extends Parser {
                 System.out.println("Expected STEAM_ at " + id + ". Has the status format changed?");
                 return;
             }
-            id = id.substring(1, id.length() - 1);
+            id = Convert.sourceSteamToSteam(id.substring(1, id.length() - 1));
         }
         String name = line.substring(line.indexOf("\"") + 1, line.indexOf("\"", line.indexOf("\"") + 1));
-        User user = new User(parts[1], name, source ? Convert.sourceSteamToSteam(id) : id);
+        newCache.putIfAbsent(id, new User(parts[1], name, id));
+
+        User user = newCache.get(id);
+        user.setServerName(name);
+        user.setUserId(Integer.parseInt(parts[1]));
+        user.getStats(client, config);
+
         if (config.doCache() && userCache.containsKey(user.getCommunityID())) {
             long time = userCache.get(user.getCommunityID());
             user.setDate(Math.abs(time), time < 0);
@@ -178,6 +198,7 @@ public class PlaytimeParser extends Parser {
                 System.out.printf("ERROR: Unable to get steam age of %s", p.getPersonaname());
                 continue;
             }
+
             if (currentDiff == 0 /* Not a guess */ || config.persistGuesses())
                 userCache.put(user.getCommunityID(), (currentDiff == 0 ? p.getTimecreated().longValue() : -p.getTimecreated().longValue()) * 1000L);
 

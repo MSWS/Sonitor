@@ -15,6 +15,8 @@ public abstract class Config {
     protected int gunTimeout = 10, buttonTimeout = 5, nadeTimeout = 10, wardenTimeout = 5, freeTime = 10;
     protected boolean showEarlyVents = true, showEarlyKills = true, showGameButtons = true, showNades = true, showGunPlants = true;
     protected boolean doJailbreak = true, doPlaytime = true;
+    protected boolean cacheGametimes = true, requestGametimes = true;
+    protected int appId = 730;
 
     public boolean showNades() {
         return showNades;
@@ -44,6 +46,9 @@ public abstract class Config {
         return freeTime;
     }
 
+    public int getAppId() {
+        return appId;
+    }
 
     public EnumSet<JailActionType> getActions() {
         return actions;
@@ -80,6 +85,15 @@ public abstract class Config {
     public boolean doCache() {
         return cache;
     }
+
+    public boolean cacheGametimes() {
+        return cacheGametimes;
+    }
+
+    public boolean requestGametimes() {
+        return requestGametimes;
+    }
+
 
     public boolean persistGuesses() {
         return persistGuesses;
