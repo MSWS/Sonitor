@@ -73,8 +73,12 @@ public class JBParser extends Parser {
         if (!pattern.matcher(line).lookingAt())
             return;
 
-        JailAction jailAction = new JailAction(line);
-        jbActions.add(jailAction);
+        try {
+            JailAction jailAction = new JailAction(line);
+            jbActions.add(jailAction);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Unknown jailbreak line: " + line);
+        }
     }
 
     /**
