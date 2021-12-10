@@ -83,6 +83,10 @@ public class JailAction implements Comparable<JailAction> {
             return JailActionType.RESKIN;
         } else if (line.contains("was respawned for touching")) {
             return JailActionType.GHOST_RESPAWN;
+        } else if (line.endsWith("has disconnected, passing warden")) {
+            return JailActionType.PASS;
+        } else if (line.contains("broke '")) {
+            return JailActionType.VENTS;
         }
 
         throw new IllegalArgumentException("Invalid line: " + line);
