@@ -54,7 +54,7 @@ public class User implements Comparable<User> {
 //            playtime = 0;
             playtime.put(server, 0L);
         } catch (IndexOutOfBoundsException e) {
-            System.out.println("Invalid playerinfo format for " + steamId);
+            System.out.println("Invalid playerinfo format for " + steamId + " (http://prestigegaming.gameme.com/r/playerinfo/" + server + "/" + steamId + ")");
             playtime.put(server, 0L);
         }
     }
