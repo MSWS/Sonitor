@@ -48,11 +48,13 @@ public class User implements Comparable<User> {
         try {
             Document doc = Jsoup.connect("http://prestigegaming.gameme.com/r/playerinfo/" + server + "/" + steamId).get();
             Element time = doc.select("td").get(22);
-//            playtime = Convert.gameMETime(time.ownText());
             playtime.put(server, Convert.gameMETime(time.ownText()));
         } catch (IOException e) {
             e.printStackTrace();
 //            playtime = 0;
+            playtime.put(server, 0L);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Invalid playerinfo format for " + steamId);
             playtime.put(server, 0L);
         }
     }

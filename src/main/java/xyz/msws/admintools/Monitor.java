@@ -37,26 +37,32 @@ public class Monitor extends TimerTask {
     }
 
     public void run() {
-        String lines = readFile(output);
-        for (String line : lines.split("\n")) {
-            parse(line.trim());
-        }
+        try {
+            String lines = readFile(output);
+            for (String line : lines.split("\n")) {
+                parse(line.trim());
+            }
 
-        try (FileWriter writer = new FileWriter(output)) {
-            writer.write("");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (clone != null) {
-            try {
-                clone.createNewFile();
-                FileWriter writer = new FileWriter(clone, true);
-                writer.write(lines);
-                writer.close();
+            try (FileWriter writer = new FileWriter(output)) {
+                writer.write("");
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            if (clone != null) {
+                try {
+                    clone.createNewFile();
+                    FileWriter writer = new FileWriter(clone, true);
+                    writer.write(lines);
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
     private final List<String> directories = new ArrayList<>();

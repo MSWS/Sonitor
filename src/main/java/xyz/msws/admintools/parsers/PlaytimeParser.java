@@ -87,24 +87,27 @@ public class PlaytimeParser extends Parser {
             if (config.getHeader() != null)
                 Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
             List<String> changes = new ArrayList<>();
-            int longestName = 0, longestTime = 0;
+            int longestName = 0, longestAge = 1, longestPlaytime = 1;
             for (User user : users) {
-                String ls = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                String ls = user.getServerName();
                 if (ls.length() + 1 > longestName)
                     longestName = ls.length() + 1;
-                if (user.getPlaytime(webId) <= 0)
+                ls = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                if (ls.length() + 1 > longestAge)
+                    longestAge = ls.length() + 1;
+                if (webId == null || user.getPlaytime(webId) <= 0)
                     continue;
                 ls = Convert.timeToStr(user.getPlaytime(webId));
-                if (ls.length() + 1 > longestTime)
-                    longestTime = ls.length() + 1;
+                if (ls.length() + 1 > longestPlaytime)
+                    longestPlaytime = ls.length() + 1;
             }
-            System.out.println(" ".repeat(30) + " Account Age | Server Playtime | Game Time");
+            System.out.println(" ".repeat(longestName + longestAge - 10) + " Account Age | Server Playtime | Game Time");
             for (User user : users) {
                 String age = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
-                String playtime = Convert.timeToStr(user.getPlaytime(webId));
+                String playtime = webId != null ? Convert.timeToStr(user.getPlaytime(webId)) : "";
                 String account = user.getAccountAge() > 0 ? Convert.timeToStr(user.getAccountAge()) : "";
 
-                System.out.printf("#%-3d %-20s %" + longestName + "s | %-" + longestTime + "s | %-15s\n",
+                System.out.printf("#%-3d %-" + longestName + "s %" + longestAge + "s | %-" + longestPlaytime + "s | %-15s\n",
                         user.getUserId(), user.getServerName(), age, playtime, account);
 
                 if (config.warnNameChanges()) {
