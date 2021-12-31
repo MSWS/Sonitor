@@ -53,27 +53,11 @@ public class PlaytimeParser extends Parser {
 
     public void parse(String line) {
         if (config.getWebId() == null && line.startsWith("hostname:")) {
-
-            switch (line) {
-                case "hostname:     =(eGO)= MINIGAMES | AWP+ | 102 TICK | !WS !KNIFE | EdgeGame" -> webId = "csgo";
-                case "hostname:     =(eGO)= TTT | TROUBLE IN TERRORIST TOWN | EdgeGamers.com" -> webId = "csgo2";
-                case "hostname:     =(eGO)= | JAILBREAK | GANGS+ | EdgeGamers.com" -> webId = "csgo3";
-                case "hostname:     Hydra Sabers Beta | TDM | Jedi vs Sith" -> webId = "csgo4";
-                case "hostname:     =(eGO)= BEGINNER SURF 24/7 | 85 TICK | !WS !KNIFE | EdgeGam" -> webId = "csgo5";
-                case "hostname:     =(eGO)= EASY BHOP 24/7 | 102 TICK | !WS !KNIFE | EdgeGamers" -> webId = "csgo6";
-                case "hostname:     =(eGO)= 2FORT | US | FAST RESPAWN | EdgeGamers.com" -> webId = "tf";
-                default -> {
-                    System.out.println("Unknown server: " + line);
-                    webId = null;
-                }
-            }
-            System.out.println("Auto-detected server: " + line.substring("hostname:     ".length()) + " using " + webId);
+            checkWebID(line);
             return;
         }
         if (line.contains("# userid name uniqueid connected ping loss state rate") || line.contains("# userid name                uniqueid            connected ping loss state")) {
-            users = new ArrayList<>();
-            unknown = new ArrayList<>();
-            lastStatus = System.currentTimeMillis();
+            reset();
             return;
         }
         if (line.contains("#end") || (lastStatus != -1 && System.currentTimeMillis() - lastStatus > config.getTimeout() && config.getTimeout() != -1)) {
@@ -105,23 +89,23 @@ public class PlaytimeParser extends Parser {
             List<String> changes = new ArrayList<>();
             int longestName = 0, longestTime = 0;
             for (User user : users) {
-                String ls = "#%d %s";
-                ls = String.format(ls, user.getUserId(), user.getServerName());
+                String ls = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
                 if (ls.length() + 1 > longestName)
                     longestName = ls.length() + 1;
-                ls += " ".repeat(Math.max(longestName - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                if (user.getPlaytime(webId) <= 0)
+                    continue;
+                ls = Convert.timeToStr(user.getPlaytime(webId));
                 if (ls.length() + 1 > longestTime)
                     longestTime = ls.length() + 1;
             }
+            System.out.println(" ".repeat(30) + " Account Age | Server Playtime | Game Time");
             for (User user : users) {
-                String ls = "#%d %s";
-                ls = String.format(ls, user.getUserId(), user.getServerName());
-                ls += " ".repeat(Math.max(longestName - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
-//                if (user.getAccountAge() != -1)
-//                    ls += " ".repeat(Math.max(longest - ls.length(), 0)) + " (" + Convert.timeToStr(user.getAccountAge()) + ")";
-                if (webId != null && user.getPlaytime(webId) > 0)
-                    ls += " ".repeat(Math.max(longestTime - ls.length(), 0)) + "| " + Convert.timeToStr(user.getPlaytime(webId));
-                System.out.println(ls);
+                String age = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                String playtime = Convert.timeToStr(user.getPlaytime(webId));
+                String account = user.getAccountAge() > 0 ? Convert.timeToStr(user.getAccountAge()) : "";
+
+                System.out.printf("#%-3d %-20s %" + longestName + "s | %-" + longestTime + "s | %-15s\n",
+                        user.getUserId(), user.getServerName(), age, playtime, account);
 
                 if (config.warnNameChanges()) {
                     String currentName = user.getServerName();
@@ -164,7 +148,7 @@ public class PlaytimeParser extends Parser {
         User user = newCache.get(id);
         user.setServerName(name);
         user.setUserId(Integer.parseInt(parts[1]));
-//        user.getStats(client, config);
+        user.getStats(client, config);
 
         if (config.doCache() && userCache.containsKey(user.getCommunityID())) {
             long time = userCache.get(user.getCommunityID());
@@ -173,6 +157,31 @@ public class PlaytimeParser extends Parser {
         } else {
             unknown.add(user);
         }
+    }
+
+    private void reset() {
+        users = new ArrayList<>();
+        unknown = new ArrayList<>();
+        lastStatus = System.currentTimeMillis();
+    }
+
+    private void checkWebID(String line) {
+        String old = webId;
+        switch (line) {
+            case "hostname:     =(eGO)= MINIGAMES | AWP+ | 102 TICK | !WS !KNIFE | EdgeGame" -> webId = "csgo";
+            case "hostname:     =(eGO)= TTT | TROUBLE IN TERRORIST TOWN | EdgeGamers.com" -> webId = "csgo2";
+            case "hostname:     =(eGO)= | JAILBREAK | GANGS+ | EdgeGamers.com" -> webId = "csgo3";
+            case "hostname:     Hydra Sabers Beta | TDM | Jedi vs Sith" -> webId = "csgo4";
+            case "hostname:     =(eGO)= BEGINNER SURF 24/7 | 85 TICK | !WS !KNIFE | EdgeGam" -> webId = "csgo5";
+            case "hostname:     =(eGO)= EASY BHOP 24/7 | 102 TICK | !WS !KNIFE | EdgeGamers" -> webId = "csgo6";
+            case "hostname:     =(eGO)= 2FORT | US | FAST RESPAWN | EdgeGamers.com" -> webId = "tf";
+            default -> {
+                System.out.println("Unknown server: " + line);
+                webId = null;
+            }
+        }
+        if (old == null || !old.equals(webId))
+            System.out.println("Auto-detected server: " + line.substring("hostname:     ".length()) + " using " + webId);
     }
 
     private void removeKnownNames(Iterator<User> it) {
