@@ -115,6 +115,10 @@ public class JailAction implements Comparable<JailAction> {
                 playerRole = JailRole.valueOf(line.substring(playerRoleStart, playerRoleEnd).toUpperCase());
             }
         }
+        if (playerRole == null) {
+            System.out.println("Unknown line: " + line);
+            return;
+        }
         boolean world = playerRole == JailRole.WORLD;
 
         playerStart = 8;

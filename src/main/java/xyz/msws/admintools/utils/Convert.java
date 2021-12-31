@@ -95,19 +95,76 @@ public class Convert {
         return String.format("%.2f %s", (double) ms / unit.toMillis(1), unit.toString().toLowerCase());
     }
 
+    // 31 days 04:27:56 hours
+    // 0d 00:00h
+    // 4d 18:55h
+    // 04:28:49
+    public static long gameMETime(String input) {
+        if (input.endsWith(" hours"))
+            input = input.substring(0, input.length() - " hours".length());
+        if (input.endsWith("h"))
+            input = input.substring(0, input.length() - 1);
+        String[] parts = input.split(" ");
+        if (parts[0].endsWith("d"))
+            parts[0] = parts[0].substring(0, parts[0].length() - 1);
+        String[] hours = parts[parts.length - 1].split(":");
+
+        long time = 0;
+        try {
+            time += Integer.parseInt(hours[0]) * TimeUnit.HOURS.ms;
+            time += Integer.parseInt(hours[1]) * TimeUnit.MINUTES.ms;
+            if (hours.length == 3)
+                time += Integer.parseInt(hours[2]) * TimeUnit.SECONDS.ms;
+
+            if (parts.length == 1)
+                return time;
+            time += Integer.parseInt(parts[0]) * TimeUnit.DAYS.ms;
+        } catch (NumberFormatException e) {
+            System.out.println("Unable to parse time of " + input);
+            e.printStackTrace();
+        }
+
+        return time;
+    }
+
+    @Test
+    public void testZero() {
+        Assert.assertEquals(gameMETime("0d 00:00h"), 0);
+    }
+
+    @Test
+    public void testDay() {
+        Assert.assertEquals(gameMETime("1d 00:00 hours"), TimeUnit.DAYS.toMillis(1));
+    }
+
+    @Test
+    public void testDayAlt() {
+        Assert.assertEquals(gameMETime("1 days 00:00:00h"), TimeUnit.DAYS.toMillis(1));
+    }
+
+    @Test
+    public void testMonth() {
+        Assert.assertEquals(gameMETime("31 days 04:27:56 hours"), 2694476000L);
+    }
+
+    @Test
+    public void testSimple() {
+        Assert.assertEquals(gameMETime("04:28:49"), 16129000);
+    }
+
     @Test(expected = NullPointerException.class)
     public void testNull() {
         steamToCommunity(null);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testEmpty() {
-        Assert.assertEquals(steamToCommunity(""), -1);
+        steamToCommunity("");
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalid() {
-        Assert.assertEquals(steamToCommunity("INVALID"), -1);
+        steamToCommunity("INVALID");
     }
 
     @Test
@@ -119,6 +176,5 @@ public class Convert {
     public void testRegularCommunity() {
         Assert.assertEquals(communityToSteam(76561197970977166L), "STEAM_0:0:5355719");
         Assert.assertEquals(communityToSteam(76561198333588297L), "STEAM_0:1:186661284");
-
     }
 }

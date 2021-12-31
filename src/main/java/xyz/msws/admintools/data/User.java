@@ -7,7 +7,14 @@ import com.lukaspradel.steamapi.data.json.playerstats.Stat;
 import com.lukaspradel.steamapi.webapi.client.SteamWebApiClient;
 import com.lukaspradel.steamapi.webapi.request.SteamWebApiRequest;
 import com.lukaspradel.steamapi.webapi.request.builders.SteamWebApiRequestFactory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import xyz.msws.admintools.utils.Convert;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents any user on any server
@@ -17,9 +24,13 @@ import xyz.msws.admintools.utils.Convert;
 public class User implements Comparable<User> {
     private String serverName, steamId;
     private int userId;
-    private long steamCom, date = -1, playtime = -1;
+    private long steamCom, date = -1, accountAge = -1;
+    //    private long playtime = -1;
+    private Map<String, Long> playtime = new HashMap<>();
     private boolean isEstimate = false;
     private Playerstats stats;
+
+    // prestigegaming.gameme.com/r/playerinfo/csgo3/STEAM_0:1:186661284
 
     public User(int userid, String serverName, long steam) {
         this.userId = userid;
@@ -31,6 +42,25 @@ public class User implements Comparable<User> {
     public User(int userid, String serverName, String steam) {
         this(userid, serverName, Convert.steamToCommunity(steam));
         this.steamId = steam;
+    }
+
+    public void fetchGameME(String server) {
+        try {
+            Document doc = Jsoup.connect("http://prestigegaming.gameme.com/r/playerinfo/" + server + "/" + steamId).get();
+            Element time = doc.select("td").get(22);
+//            playtime = Convert.gameMETime(time.ownText());
+            playtime.put(server, Convert.gameMETime(time.ownText()));
+        } catch (IOException e) {
+            e.printStackTrace();
+//            playtime = 0;
+            playtime.put(server, 0L);
+        }
+    }
+
+    public long getPlaytime(String server) {
+        if (!playtime.containsKey(server))
+            fetchGameME(server);
+        return playtime.getOrDefault(server, -1L);
     }
 
     public User(String userid, String serverName, String steam) {
@@ -71,17 +101,17 @@ public class User implements Comparable<User> {
         }
     }
 
-    public long getPlaytime() {
+    public long getAccountAge() {
         if (stats == null)
             return -1;
-        if (playtime != -1)
-            return playtime;
+        if (accountAge != -1)
+            return accountAge;
         Stat stat = stats.getStats().stream().filter(s -> s.getName().equals("total_time_played")).findFirst().orElse(null);
         if (stat == null)
             return -1;
-        playtime = (long) stat.getValue() * 1000;
+        accountAge = (long) stat.getValue() * 1000;
 
-        return playtime; // Time is in seconds
+        return accountAge; // Time is in seconds
     }
 
     public void setDate(long date) {

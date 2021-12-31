@@ -7,6 +7,16 @@ steamkey=https://steamcommunity.com/dev/apikey
 This is the game's application ID. CS:GO's is 730, CS:S' is 240
 appId=730
 
+This is GameME's server ID, set to override auto-assignment (http://prestigegaming.gameme.com/)
+Leave blank for auto-detection
+csgo for Minigames
+csgo2 for TTT
+csgo3 for Jailbreak
+csgo5 for Surf
+csgo6 for BHop
+tf for TF2
+webId=
+
 If true, the application will check and output account ages
 doPlaytime=true
 

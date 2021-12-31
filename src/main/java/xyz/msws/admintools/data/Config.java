@@ -11,6 +11,7 @@ public abstract class Config {
     protected boolean cache = true, persistGuesses = true, persistKnowns = true, warnNameChanges = true;
     protected String header = "";
     protected String outputPath = null, apiKey = null, clonePath = null;
+    protected String webId = "csgo3";
     protected EnumSet<JailActionType> actions = EnumSet.of(JailActionType.KILL, JailActionType.WARDEN, JailActionType.WARDEN_DEATH, JailActionType.FIRE, JailActionType.PASS, JailActionType.RESKIN);
     protected int gunTimeout = 10, buttonTimeout = 5, nadeTimeout = 10, wardenTimeout = 5, freeTime = 10;
     protected boolean showEarlyVents = true, showEarlyKills = true, showGameButtons = true, showNades = true, showGunPlants = true;
@@ -94,7 +95,6 @@ public abstract class Config {
         return requestGametimes;
     }
 
-
     public boolean persistGuesses() {
         return persistGuesses;
     }
@@ -121,5 +121,9 @@ public abstract class Config {
 
     public String getClonePath() {
         return clonePath;
+    }
+
+    public String getWebId() {
+        return webId;
     }
 }

@@ -24,12 +24,13 @@ import static xyz.msws.admintools.utils.FileUtils.readFile;
 public class PlaytimeParser extends Parser {
     private List<User> users = new ArrayList<>(), unknown = new ArrayList<>();
     long lastStatus = -1;
-    private SteamWebApiClient client;
+    private final SteamWebApiClient client;
     private final File master = new File(System.getProperty("user.dir"));
     private final File cacheFile = new File(master, "cache.txt");
     private final Map<String, String> nameCache = new HashMap<>();
     private final Map<Long, Long> userCache = new HashMap<>();
     private final Map<String, User> newCache = new HashMap<>();
+    private String webId = null;
 
     public PlaytimeParser(Monitor monitor) {
         super(monitor);
@@ -51,6 +52,24 @@ public class PlaytimeParser extends Parser {
     }
 
     public void parse(String line) {
+        if (config.getWebId() == null && line.startsWith("hostname:")) {
+
+            switch (line) {
+                case "hostname:     =(eGO)= MINIGAMES | AWP+ | 102 TICK | !WS !KNIFE | EdgeGame" -> webId = "csgo";
+                case "hostname:     =(eGO)= TTT | TROUBLE IN TERRORIST TOWN | EdgeGamers.com" -> webId = "csgo2";
+                case "hostname:     =(eGO)= | JAILBREAK | GANGS+ | EdgeGamers.com" -> webId = "csgo3";
+                case "hostname:     Hydra Sabers Beta | TDM | Jedi vs Sith" -> webId = "csgo4";
+                case "hostname:     =(eGO)= BEGINNER SURF 24/7 | 85 TICK | !WS !KNIFE | EdgeGam" -> webId = "csgo5";
+                case "hostname:     =(eGO)= EASY BHOP 24/7 | 102 TICK | !WS !KNIFE | EdgeGamers" -> webId = "csgo6";
+                case "hostname:     =(eGO)= 2FORT | US | FAST RESPAWN | EdgeGamers.com" -> webId = "tf";
+                default -> {
+                    System.out.println("Unknown server: " + line);
+                    webId = null;
+                }
+            }
+            System.out.println("Auto-detected server: " + line.substring("hostname:     ".length()) + " using " + webId);
+            return;
+        }
         if (line.contains("# userid name uniqueid connected ping loss state rate") || line.contains("# userid name                uniqueid            connected ping loss state")) {
             users = new ArrayList<>();
             unknown = new ArrayList<>();
@@ -84,19 +103,24 @@ public class PlaytimeParser extends Parser {
             if (config.getHeader() != null)
                 Arrays.stream(config.getHeader().split("\\\\n")).forEach(System.out::println);
             List<String> changes = new ArrayList<>();
-            int longest = 0;
+            int longestName = 0, longestTime = 0;
             for (User user : users) {
                 String ls = "#%d %s";
-                String lr = String.format(ls, user.getUserId(), user.getServerName());
-                if (lr.length() + 1 > longest)
-                    longest = lr.length() + 1;
+                ls = String.format(ls, user.getUserId(), user.getServerName());
+                if (ls.length() + 1 > longestName)
+                    longestName = ls.length() + 1;
+                ls += " ".repeat(Math.max(longestName - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+                if (ls.length() + 1 > longestTime)
+                    longestTime = ls.length() + 1;
             }
             for (User user : users) {
                 String ls = "#%d %s";
                 ls = String.format(ls, user.getUserId(), user.getServerName());
-                ls += " ".repeat(Math.max(longest - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
-                if (user.getPlaytime() != -1)
-                    ls += " ".repeat(Math.max(longest - ls.length(), 0)) + " (" + Convert.timeToStr(user.getPlaytime()) + ")";
+                ls += " ".repeat(Math.max(longestName - ls.length(), 0)) + (user.isEstimate() ? "~" : "") + Convert.timeToStr(System.currentTimeMillis() - user.getDate());
+//                if (user.getAccountAge() != -1)
+//                    ls += " ".repeat(Math.max(longest - ls.length(), 0)) + " (" + Convert.timeToStr(user.getAccountAge()) + ")";
+                if (webId != null && user.getPlaytime(webId) > 0)
+                    ls += " ".repeat(Math.max(longestTime - ls.length(), 0)) + "| " + Convert.timeToStr(user.getPlaytime(webId));
                 System.out.println(ls);
 
                 if (config.warnNameChanges()) {
@@ -140,7 +164,7 @@ public class PlaytimeParser extends Parser {
         User user = newCache.get(id);
         user.setServerName(name);
         user.setUserId(Integer.parseInt(parts[1]));
-        user.getStats(client, config);
+//        user.getStats(client, config);
 
         if (config.doCache() && userCache.containsKey(user.getCommunityID())) {
             long time = userCache.get(user.getCommunityID());

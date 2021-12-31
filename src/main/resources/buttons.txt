@@ -26,3 +26,4 @@ cellbutton:true:
 Jumprope_Stop_Button:true:Jumprope Stop
 cellbutton:true:Cell Button
 deathcrate_stop:true:Deathcrate Stop
+#404497:true:Jumprope Stop

@@ -76,7 +76,8 @@ public class JBParser extends Parser {
         try {
             JailAction jailAction = new JailAction(line);
             jbActions.add(jailAction);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Unknown jailbreak line: " + line);
         }
     }

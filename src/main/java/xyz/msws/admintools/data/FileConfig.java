@@ -79,6 +79,10 @@ public class FileConfig extends Config {
                 cacheGametimes = getValue(line, "requestGametimes=", Boolean.class);
             } else if (line.startsWith("appId=")) {
                 appId = getValue(line, "appId=", Integer.class);
+            } else if (line.startsWith("webId=")) {
+                webId = getValue(line, "webId=");
+                if (webId.isBlank())
+                    webId = null;
             }
         }
     }
