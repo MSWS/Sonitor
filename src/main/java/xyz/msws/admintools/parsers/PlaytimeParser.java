@@ -107,7 +107,7 @@ public class PlaytimeParser extends Parser {
                 String playtime = webId != null ? Convert.timeToStr(user.getPlaytime(webId), config.getLimitPlaytime()) : "";
                 if (user.getPlaytime(webId) == 0)
                     playtime = "";
-                String account = user.getAccountAge() > 0 ? Convert.timeToStr(user.getAccountAge()) : "";
+                String account = user.getAccountAge() > 0 ? Convert.timeToStr(user.getAccountAge(), config.getLimitPlaytime()) : "";
 
                 System.out.printf("#%-3d %-" + longestName + "s %" + longestAge + "s | %-" + longestPlaytime + "s | %-15s\n",
                         user.getUserId(), user.getServerName(), age, playtime, account);
