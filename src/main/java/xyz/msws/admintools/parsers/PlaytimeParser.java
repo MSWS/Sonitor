@@ -99,12 +99,14 @@ public class PlaytimeParser extends Parser {
                     continue;
                 ls = Convert.timeToStr(user.getPlaytime(webId));
                 if (ls.length() + 1 > longestPlaytime)
-                    longestPlaytime = ls.length() + 1;
+                    longestPlaytime = ls.length();
             }
             System.out.println(" ".repeat(longestName + longestAge - 10) + " Account Age | Server Playtime | Game Time");
             for (User user : users) {
                 String age = Convert.timeToStr(System.currentTimeMillis() - user.getDate());
-                String playtime = webId != null ? Convert.timeToStr(user.getPlaytime(webId)) : "";
+                String playtime = webId != null ? Convert.timeToStr(user.getPlaytime(webId), config.getLimitPlaytime()) : "";
+                if (user.getPlaytime(webId) == 0)
+                    playtime = "";
                 String account = user.getAccountAge() > 0 ? Convert.timeToStr(user.getAccountAge()) : "";
 
                 System.out.printf("#%-3d %-" + longestName + "s %" + longestAge + "s | %-" + longestPlaytime + "s | %-15s\n",

@@ -1,5 +1,8 @@
 package xyz.msws.admintools.data;
 
+import xyz.msws.admintools.utils.Convert;
+import xyz.msws.admintools.utils.Utils;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -83,6 +86,10 @@ public class FileConfig extends Config {
                 webId = getValue(line, "webId=");
                 if (webId.isBlank())
                     webId = null;
+            } else if (line.startsWith("playtimeUnit=")) {
+                limitPlaytime = getValue(line, "playtimeUnit=", Convert.TimeUnit.class);
+                if (limitPlaytime == null)
+                    limitPlaytime = Convert.TimeUnit.YEARS;
             }
         }
     }
@@ -103,6 +110,8 @@ public class FileConfig extends Config {
             result = Double.parseDouble(getValue(value, key));
         } else if (clazz == int.class || clazz == Integer.class) {
             result = Integer.parseInt(getValue(value, key));
+        } else if (clazz.isEnum()) {
+            result = Utils.getEnum(getValue(value, key), (Class<? extends Enum>) clazz);
         }
 
         return clazz.cast(result);

@@ -63,17 +63,25 @@ public class Convert {
         return "STEAM_0:" + type + ":" + id;
     }
 
-    enum TimeUnit {
-        MILLISECONDS(1), SECONDS(1000), MINUTES(1000 * 60), HOURS(1000 * 60 * 60), DAYS(1000 * 60 * 60 * 24), MONTHS(1000L * 60 * 60 * 24 * 30), YEARS(1000L * 60 * 60 * 24 * 30 * 12);
-        private final long ms;
-
-        TimeUnit(long ms) {
-            this.ms = ms;
+    public static String timeToStr(long ms, TimeUnit biggest) {
+        TimeUnit unit = TimeUnit.YEARS;
+        for (TimeUnit u : TimeUnit.values()) {
+            if (ms < u.toMillis(1))
+                break;
+            unit = u;
+            if (u == biggest)
+                break;
         }
 
-        public long toMillis(long duration) {
-            return ms * duration;
-        }
+        double p = (double) ms / unit.toMillis(1);
+
+        if (p == 1) // If it's exactly 1 unit, don't have an S at the end of the unit
+            return "1 " + unit.toString().toLowerCase().substring(0, unit.toString().length() - 1);
+
+        if (p == (int) p) // If it's exactly a number of units, don't specify decimals
+            return (int) p + " " + unit.toString().toLowerCase();
+
+        return String.format("%.2f %s", (double) ms / unit.toMillis(1), unit.toString().toLowerCase());
     }
 
     public static String timeToStr(long ms) {
@@ -93,6 +101,19 @@ public class Convert {
             return (int) p + " " + unit.toString().toLowerCase();
 
         return String.format("%.2f %s", (double) ms / unit.toMillis(1), unit.toString().toLowerCase());
+    }
+
+    public enum TimeUnit {
+        MILLISECONDS(1), SECONDS(1000), MINUTES(1000 * 60), HOURS(1000 * 60 * 60), DAYS(1000 * 60 * 60 * 24), WEEKS(1000 * 60 * 60 * 24 * 7), MONTHS(1000L * 60 * 60 * 24 * 30), YEARS(1000L * 60 * 60 * 24 * 30 * 12);
+        private final long ms;
+
+        TimeUnit(long ms) {
+            this.ms = ms;
+        }
+
+        public long toMillis(long duration) {
+            return ms * duration;
+        }
     }
 
     // 31 days 04:27:56 hours

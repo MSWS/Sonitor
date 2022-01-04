@@ -1,5 +1,7 @@
 package xyz.msws.admintools.data;
 
+import xyz.msws.admintools.utils.Convert;
+
 import java.util.EnumSet;
 
 /**
@@ -18,6 +20,7 @@ public abstract class Config {
     protected boolean doJailbreak = true, doPlaytime = true;
     protected boolean cacheGametimes = true, requestGametimes = true;
     protected int appId = 730;
+    protected Convert.TimeUnit limitPlaytime = Convert.TimeUnit.YEARS;
 
     public boolean showNades() {
         return showNades;
@@ -125,5 +128,9 @@ public abstract class Config {
 
     public String getWebId() {
         return webId;
+    }
+
+    public Convert.TimeUnit getLimitPlaytime() {
+        return limitPlaytime;
     }
 }
