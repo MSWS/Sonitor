@@ -175,7 +175,11 @@ public class Monitor extends TimerTask {
     }
 
     private void parse(String line) {
-        parsers.forEach(p -> p.parse(line));
+        try {
+            parsers.forEach(p -> p.parse(line));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Config getConfig() {

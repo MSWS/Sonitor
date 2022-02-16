@@ -46,14 +46,14 @@ public class User implements Comparable<User> {
 
     public void fetchGameME(String server) {
         try {
-            Document doc = Jsoup.connect("http://prestigegaming.gameme.com/r/playerinfo/" + server + "/" + steamId).get();
+            Document doc = Jsoup.connect("http://edgegamersorg.gameme.com/r/playerinfo/" + server + "/" + steamId).get();
             Element time = doc.select("td").get(22);
             playtime.put(server, Convert.gameMETime(time.ownText()));
         } catch (IOException e) {
             e.printStackTrace();
             playtime.put(server, 0L);
         } catch (IndexOutOfBoundsException e) {
-            System.out.println("Invalid playerinfo format for " + steamId + " (http://prestigegaming.gameme.com/r/playerinfo/" + server + "/" + steamId + ")");
+            System.out.println("Invalid playerinfo format for " + steamId + " (http://edgegamersorg.gameme.com/r/playerinfo/" + server + "/" + steamId + ")");
             playtime.put(server, 0L);
         }
     }
