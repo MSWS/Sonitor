@@ -4,7 +4,8 @@ import xyz.msws.admintools.data.DataStructs.ActionType;
 
 public enum TTTActionType implements ActionType {
     IDENTIFY("found %s's body"), DNA("DNA'd %s's body"),
-    SHOP("bought %s"), T_SECRET("activated %s"), TAZE("tazed %s");
+    SHOP("bought %s"), T_SECRET("activated %s"), TAZE("tazed %s"), BAD_KILL("killed %s (%s)"),
+    BAD_DAMAGE("damaged %s (%s)");
 
     private final String sum;
 

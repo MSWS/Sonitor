@@ -6,7 +6,7 @@ public class DataStructs {
     }
 
     public static enum GenericActionType implements ActionType {
-        DAMAGE("damaged %s for %s"), KILL("killed %s (%s)"), NADE("threw a(n) %s"), GHOST_RESPAWN("respawned as ghost");
+        DAMAGE("damaged %s (%s) for %s"), KILL("killed %s (%s)"), NADE("threw a(n) %s"), GHOST_RESPAWN("respawned as ghost");
 
         String sum;
 

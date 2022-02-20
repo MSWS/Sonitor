@@ -21,9 +21,9 @@ public class TTTAction extends Action {
                 || line.endsWith("flash") || line.endsWith("decoy") || line.endsWith("molotov"))) {
             return GenericActionType.NADE;
         } else if (line.contains("killed ")) {
-            return GenericActionType.KILL;
+            return this.isBadAction() ? TTTActionType.BAD_KILL : GenericActionType.KILL;
         } else if (line.contains("damaged") && line.contains("for") && line.contains("with")) {
-            return GenericActionType.DAMAGE;
+            return this.isBadAction() ? TTTActionType.BAD_DAMAGE : GenericActionType.DAMAGE;
         } else if (line.contains("identified body of")) {
             return TTTActionType.IDENTIFY;
         } else if (line.contains("purchased an item from the shop:")) {
@@ -73,7 +73,8 @@ public class TTTAction extends Action {
         playerStart = 12;
         playerEnd = playerRoleStart - (world ? -5 : 2);
 
-        if (type != GenericActionType.DAMAGE && type != GenericActionType.KILL)
+        if (type != GenericActionType.DAMAGE && type != GenericActionType.KILL && type != TTTActionType.BAD_DAMAGE
+                && type != TTTActionType.BAD_KILL)
             return;
 
         for (TTTRole role : TTTRole.values()) {
@@ -111,6 +112,7 @@ public class TTTAction extends Action {
                     return new String[] { targetRole.getIcon() };
                 case DAMAGE:
                     return new String[] {
+                            targetRole.getIcon(),
                             line.substring(line.lastIndexOf(") for ") + ") for ".length(),
                                     line.lastIndexOf(" damage ") - 1),
                             line.substring(line.lastIndexOf(" ") + 1, line.length() - 1) };
@@ -123,6 +125,14 @@ public class TTTAction extends Action {
         if (!(type instanceof TTTActionType tttType))
             return new String[] { "Invalid Type" };
         switch (tttType) {
+            case BAD_KILL:
+                return new String[] { targetRole.getIcon() };
+            case BAD_DAMAGE:
+                return new String[] {
+                        targetRole.getIcon(),
+                        line.substring(line.lastIndexOf(") for ") + ") for ".length(),
+                                line.lastIndexOf(" damage ") - 1),
+                        line.substring(line.lastIndexOf(" ") + 1, line.length() - 1) };
             case IDENTIFY:
                 return new String[] {
                         line.substring(line.lastIndexOf("identified body of ") + "identified body of ".length(),
@@ -146,7 +156,7 @@ public class TTTAction extends Action {
         }
     }
 
-    boolean isBadAction() {
+    public boolean isBadAction() {
         return line.endsWith("BAD ACTION");
     }
 }

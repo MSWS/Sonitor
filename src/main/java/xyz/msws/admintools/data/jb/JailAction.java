@@ -161,6 +161,7 @@ public class JailAction extends Action {
                     return new String[] { targetRole.getIcon() };
                 case DAMAGE:
                     return new String[] {
+                            targetRole.getIcon(),
                             line.substring(line.lastIndexOf("with ") + "with ".length(),
                                     line.lastIndexOf("damage") - 1),
                             line.substring(line.lastIndexOf("(") + 1, line.length() - 1) };

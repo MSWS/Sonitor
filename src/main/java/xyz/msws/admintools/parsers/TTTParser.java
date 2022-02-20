@@ -8,7 +8,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import xyz.msws.admintools.Monitor;
+import xyz.msws.admintools.data.DataStructs.GenericActionType;
 import xyz.msws.admintools.data.ttt.TTTAction;
+import xyz.msws.admintools.data.ttt.TTTActionType;
+import xyz.msws.admintools.data.ttt.TTTRole;
 
 public class TTTParser extends Parser {
 
@@ -38,8 +41,16 @@ public class TTTParser extends Parser {
             for (TTTAction act : tttActions) {
                 if (!config.getActions().contains(act.getType()))
                     continue;
-                System.out.println(act.simplify());
+                try {
+                    System.out.println(act.simplify());
+                } catch (Exception e) {
+                    System.out.println("Error occured while parsing " + act.getLine() + ":\n" + e.getMessage());
+                }
             }
+
+            checkHidden();
+            checkRDM();
+
             tttActions.clear();
             lines.clear();
             parse = false;
@@ -47,9 +58,7 @@ public class TTTParser extends Parser {
         }
         if (!parse)
             return;
-        if (!line.startsWith("["))
-            return;
-        if (line.charAt(8) == '[')
+        if (!line.startsWith("[") || line.charAt(8) != '-' || line.charAt(9) != '>')
             return;
         if (line.endsWith("has been started!"))
             return;
@@ -63,6 +72,54 @@ public class TTTParser extends Parser {
             e.printStackTrace();
             System.out.println("Unknown TTT line: " + line);
         }
+    }
+
+    private void checkHidden() {
+        Set<String> revealed = new HashSet<>();
+        Set<String> toPrint = new HashSet<>();
+        for (TTTAction act : tttActions) {
+            if (act.getPlayerRole() == TTTRole.TRAITOR
+                    && (act.getType() == GenericActionType.DAMAGE || act.getType() == TTTActionType.T_SECRET
+                            || act.getType() == TTTActionType.TAZE)) {
+                revealed.add(act.getType() == TTTActionType.TAZE ? act.getOther()[0] : act.getPlayer());
+                continue;
+            }
+
+            if (act.getTargetRole() != TTTRole.TRAITOR
+                    || (act.getType() != GenericActionType.DAMAGE && act.getType() != GenericActionType.KILL))
+                continue;
+
+            if (revealed.contains(act.getTarget()))
+                continue;
+
+            toPrint.add(act.simplify());
+        }
+        if (toPrint.isEmpty())
+            return;
+        print("\nEarly Traitor Kills (Ts did not commit any acts)");
+        toPrint.forEach(s -> print(s));
+    }
+
+    private void checkRDM() {
+        Set<String> toPrint = new HashSet<>();
+        for (TTTAction act : tttActions) {
+            if (act.getPlayerRole() != act.getTargetRole() && !act.isBadAction())
+                continue;
+            if (act.getType() == TTTActionType.BAD_DAMAGE)
+                continue;
+            toPrint.add(act.simplify());
+        }
+        if (toPrint.isEmpty())
+            return;
+        print("\nBad Actions");
+        toPrint.forEach(s -> print(s));
+    }
+
+    private void print(String line) {
+        if (lines.contains(line))
+            return;
+        System.out.println(line);
+        lines.add(line);
     }
 
 }
