@@ -5,6 +5,7 @@ import xyz.msws.admintools.data.FileConfig;
 import xyz.msws.admintools.parsers.JBParser;
 import xyz.msws.admintools.parsers.Parser;
 import xyz.msws.admintools.parsers.PlaytimeParser;
+import xyz.msws.admintools.parsers.TTTParser;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -33,6 +34,8 @@ public class Monitor extends TimerTask {
             parsers.add(new PlaytimeParser(this));
         if (config.doJailbreak())
             parsers.add(new JBParser(this));
+        if (config.doTTT())
+            parsers.add(new TTTParser(this));
         timer.schedule(this, 0, config.getRate());
     }
 
@@ -82,13 +85,16 @@ public class Monitor extends TimerTask {
         }
 
         // Drive Specific
-        directories.add(master.getAbsolutePath().charAt(0) + ":\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
-        directories.add(master.getAbsolutePath().charAt(0) + ":\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
+        directories.add(master.getAbsolutePath().charAt(0)
+                + ":\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
+        directories.add(master.getAbsolutePath().charAt(0)
+                + ":\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
 
         // Default Computer
         directories.add("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
         directories.add("C:\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
-        directories.add("C:\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
+        directories
+                .add("C:\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
 
         // Mac
         directories.add("~/Library/Application Support/Steam/steamapps/common/Counter-Strike Global Offensive/csgo");
@@ -97,8 +103,10 @@ public class Monitor extends TimerTask {
         directories.add("~/.steam/steam/SteamApps/common/Counter-Strike Global Offensive/csgo");
 
         for (int i = 'A'; i <= 'Z'; i++) {
-            directories.add((char) i + ":\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
-            directories.add((char) i + ":\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
+            directories.add((char) i
+                    + ":\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
+            directories.add(
+                    (char) i + ":\\Program Files\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo");
         }
 
         File parent = null;
@@ -112,7 +120,8 @@ public class Monitor extends TimerTask {
             }
         }
         if (!parent.exists()) {
-            System.out.println("Could not locate CS:GO directory. Please specify the proper directory in the settings.txt");
+            System.out.println(
+                    "Could not locate CS:GO directory. Please specify the proper directory in the settings.txt");
             return false;
         }
 
@@ -154,7 +163,8 @@ public class Monitor extends TimerTask {
             System.out.println("Supplied path is a folder, searching for " + logFile);
             output = new File(output, logFile);
             if (!output.exists())
-                output = new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
+                output = new File(
+                        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\output.log");
         }
         if (!output.exists()) {
             output = new File(parent, logFile);

@@ -23,6 +23,9 @@ doPlaytime=true
 If true, the application will check Jailbreak Logs
 doJailbreak=true
 
+If true, the application will check TTT Logs
+doTTT=true
+
 If you wish to limit the largest unit used to display playtime, you can specify it here
 eg. if set to HOURS then "48 hours" would be displayed instead of "2 days"
 playtimeUnit=YEARS
