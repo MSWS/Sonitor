@@ -95,3 +95,10 @@ modules.xml
 .idea/sonarlint
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all
+target/*
+cache.txt
+clone.log
+data.txt
+Sonitor.jar
+.vscode/launch.json
+.vscode/tasks.json

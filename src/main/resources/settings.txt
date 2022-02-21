@@ -23,6 +23,9 @@ doPlaytime=true
 If true, the application will check Jailbreak Logs
 doJailbreak=true
 
+If true, the application will check TTT Logs
+doTTT=true
+
 If you wish to limit the largest unit used to display playtime, you can specify it here
 eg. if set to HOURS then "48 hours" would be displayed instead of "2 days"
 playtimeUnit=YEARS
@@ -63,7 +66,7 @@ warnNameChages=true
 Jailbreak Specific Settings
 
 Log specific summarized actions
-Values: DAMAGE, KILL, BUTTON, WARDEN, VENTS, DROP_WEAPON, NADE, WARDEN_DEATH, PASS, FIRE, RESKIN, GHOST_RESPAWN
+Values: DAMAGE, KILL, BUTTON, WARDEN, VENTS, DROP_WEAPON, NADE, WARDEN_DEATH, PASS, FIRE, RESKIN, GHOST_RESPAWN, BAD_DAMAGE, BAD_KILL, BODYID, DNA, SHOP, TSECRET, TAZE
 Damage: Whenever a player damages another player
 Kill: Whenever a player kills another player
 Button: Whenever a player pushes a button
@@ -76,8 +79,13 @@ Pass: Whenever the warden passes
 Fire: Whenever the warden is fired
 Reskin: Whenever a player reskins a weapon
 Ghost_Respawn: Whenever a ghost respawns
-
-showTypes=KILL,WARDEN,WARDEN_DEATH,FIRE,PASS,RESKIN
+Bad_Damage: Whenever a player deals bad damage (inno on inno, traitor on traitor, etc.)
+Bad_Kill: Whenever a player deals bad damage (inno on inno, traitor on traitor, etc.)
+Bodyid: Whenever a player identifies a body
+DNA: Whenever a detective DNA scans a body
+TSecret: Whenever a traitor activates a T secret
+Taze: Whenever a player tazes another player
+showTypes=KILL,WARDEN,WARDEN_DEATH,FIRE,PASS,RESKIN,BAD_KILL
 
 Cooldown for when a CT drops a gun and a T uses the same type of gun (seconds)
 gundropTimeout=10

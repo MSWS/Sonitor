@@ -1,10 +1,13 @@
-package xyz.msws.admintools.data;
+package xyz.msws.admintools.data.jb;
+
+import xyz.msws.admintools.data.DataStructs.Role;
 
 /**
  * Enum to identify a player's role on Jailbreak
  */
-public enum JailRole {
-    WARDEN("W"), GUARD("G"), PRISONER("P"), REBEL("R"), SPECTATOR("S"), WORLD("World"), GHOST("Ghost"), UNKNOWN("Unknown");
+public enum JailRole implements Role {
+    WARDEN("W"), GUARD("G"), PRISONER("P"), REBEL("R"), SPECTATOR("S"), WORLD("World"), GHOST("Ghost"),
+    UNKNOWN("Unknown");
 
     private final String icon;
 
