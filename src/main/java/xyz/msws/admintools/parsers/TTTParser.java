@@ -121,5 +121,4 @@ public class TTTParser extends Parser {
         System.out.println(line);
         lines.add(line);
     }
-
 }

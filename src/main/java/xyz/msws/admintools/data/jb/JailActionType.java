@@ -7,10 +7,8 @@ import xyz.msws.admintools.data.DataStructs.ActionType;
  */
 public enum JailActionType implements ActionType {
     BUTTON("pressed %s (%s)"), WARDEN("took warden"),
-    VENTS("broke vents"),
-    DROP_WEAPON("dropped a(n) %s"), WARDEN_DEATH("died as warden"), PASS("passed warden"),
-    FIRE("was fired"),
-    RESKIN("reskinned %2$s's %1$s");
+    VENTS("broke vents"), DROP_WEAPON("dropped a(n) %s"), WARDEN_DEATH("died as warden"), PASS("passed warden"),
+    FIRE("was fired"), RESKIN("reskinned %2$s's %1$s"), PICKUP("picked up %s's %s");
 
     private final String sum;
 

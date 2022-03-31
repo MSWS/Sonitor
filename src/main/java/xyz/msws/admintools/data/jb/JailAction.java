@@ -71,6 +71,8 @@ public class JailAction extends Action {
             return GenericActionType.KILL;
         } else if (line.contains("dropped the weapon")) {
             return JailActionType.DROP_WEAPON;
+        } else if (line.contains(" picked up ")) {
+            return JailActionType.PICKUP;
         } else if (line.endsWith("has been fired by an admin")) {
             return JailActionType.FIRE;
         } else if (line.endsWith("has passed warden")) {
@@ -173,9 +175,10 @@ public class JailAction extends Action {
         }
         if (!(type instanceof JailActionType jbType))
             return new String[] { "Invalid Type" };
+        String name, weapon;
         switch (jbType) {
             case BUTTON:
-                String name = line.substring(
+                name = line.substring(
                         line.substring(0, line.length() - 1).lastIndexOf(
                                 line.contains("pressed button 'Unknown'") ? "(" : "'", line.length() - 2) + 1,
                         line.length() - 1);
@@ -184,13 +187,18 @@ public class JailAction extends Action {
             case DROP_WEAPON:
                 return new String[] { line.substring(line.lastIndexOf(" ") + 1, line.length() - 1) };
             case RESKIN:
-                String weapon = line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(),
+                weapon = line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(),
                         line.indexOf(" ", line.lastIndexOf("weapon_")));
                 if (line.endsWith("(not previously owned)")) {
                     return new String[] { weapon, "their own" };
                 }
                 return new String[] { weapon, line
                         .substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1) };
+            case PICKUP:
+                name = line.substring(line.indexOf("picked up ") + "picked up ".length(),
+                        line.lastIndexOf("'s "));
+                weapon = line.substring(line.lastIndexOf(" ") + 1, line.length() - 1);
+                return new String[] { name, weapon };
             default:
                 return new String[] {};
         }

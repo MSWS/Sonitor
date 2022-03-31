@@ -3,6 +3,8 @@ package xyz.msws.admintools.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import xyz.msws.admintools.data.DataStructs.ActionType;
 import xyz.msws.admintools.data.DataStructs.Role;
 import xyz.msws.admintools.data.jb.JailRole;
@@ -13,8 +15,13 @@ import xyz.msws.admintools.data.jb.JailRole;
  * Compares by time
  */
 public abstract class Action implements Comparable<Action> {
+    @Getter
     protected ActionType type;
+    @Getter
+    @Setter
     protected String player, target;
+    @Getter
+    @Setter
     protected Role playerRole, targetRole;
     protected String[] other;
     protected String line;
@@ -27,26 +34,6 @@ public abstract class Action implements Comparable<Action> {
 
     public Action(String line) {
         this.line = line;
-    }
-
-    public String getPlayer() {
-        return player;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public Role getPlayerRole() {
-        return playerRole;
-    }
-
-    public Role getTargetRole() {
-        return targetRole;
-    }
-
-    public ActionType getType() {
-        return type;
     }
 
     public String[] getOther() {

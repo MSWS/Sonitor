@@ -1,17 +1,25 @@
 package xyz.msws.admintools.parsers;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import xyz.msws.admintools.Monitor;
-import xyz.msws.admintools.data.*;
+import xyz.msws.admintools.data.Button;
+import xyz.msws.admintools.data.ButtonDatabase;
 import xyz.msws.admintools.data.DataStructs.GenericActionType;
+import xyz.msws.admintools.data.DataStructs.Role;
 import xyz.msws.admintools.data.jb.JailAction;
 import xyz.msws.admintools.data.jb.JailActionType;
 import xyz.msws.admintools.data.jb.JailRole;
 import xyz.msws.admintools.utils.MSG;
-
-import java.io.File;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Parses Jailbreak Logs
@@ -66,6 +74,7 @@ public class JBParser extends Parser {
                 checkNades();
             if (config.showGunPlants())
                 checkGuns();
+            checkST();
             checkSpectator();
             jbActions.clear();
             lines.clear();
@@ -269,33 +278,32 @@ public class JBParser extends Parser {
      * Checks if a CT drops a gun and a T uses the same type of gun soon after
      */
     private void checkGuns() {
-        List<JailAction> guns = jbActions.stream()
-                .filter(act -> act.getType() == JailActionType.DROP_WEAPON && act.getPlayerRole().isCT())
+        List<JailAction> pickups = jbActions.stream()
+                .filter(act -> act.getType() == JailActionType.PICKUP && act.getPlayerRole().isT())
                 .collect(Collectors.toList());
-        Iterator<JailAction> it = guns.iterator();
-        while (it.hasNext()) {
-            JailAction drop = it.next();
-            JailAction death = jbActions.stream()
-                    .filter(a -> a.getType() == GenericActionType.KILL && a.getTarget().equals(drop.getPlayer()))
-                    .findFirst().orElse(null);
-            if (death == null)
+        for (JailAction pickup : pickups) {
+            JailAction known = jbActions.stream().filter(a -> a.getPlayer().equals(pickup.getOther()[0])).findFirst()
+                    .orElse(null);
+            if (known == null)
                 continue;
-            if (death.getTime() == drop.getTime() || death.getTime() + 1 == drop.getTime())
-                it.remove();
-        }
-
-        for (JailAction act : jbActions.stream()
-                .filter(act -> act.getType() == GenericActionType.DAMAGE && act.getPlayerRole().isT())
-                .collect(Collectors.toList())) {
-            List<JailAction> ds = guns.stream()
-                    .filter(p -> p.getTime() <= act.getTime() && p.getTime() > act.getTime() - config.getGunTimeout()
-                            && p.getOther()[0].equals(act.getOther()[1]))
-                    .collect(Collectors.toList());
-            for (JailAction p : ds) {
-                print("\nGun Plants");
-                print(p.simplify() + " and " + act.getPlayer() + " (" + act.getPlayerRole().getIcon()
-                        + ") used one shortly after");
+            Role dropRole = known.getPlayerRole();
+            if (!dropRole.isCT())
+                continue;
+            JailAction firstDrop = jbActions.stream()
+                    .filter(a -> a.getType() == JailActionType.DROP_WEAPON && a.getPlayer().equals(known.getPlayer())
+                            && a.getOther()[0].equals(pickup.getOther()[1]))
+                    .findFirst().orElse(null);
+            if (firstDrop == null) {
+                continue;
             }
+            JailAction death = jbActions.stream()
+                    .filter(a -> a.getType() == GenericActionType.KILL && a.getTarget().equals(known.getPlayer()))
+                    .findFirst().orElse(null);
+            if (death.getTime() == firstDrop.getTime()) {
+                continue;
+            }
+            print("\nGunplants");
+            print(pickup.simplify() + ", dropped at " + firstDrop.getTimeString());
         }
     }
 
@@ -309,6 +317,22 @@ public class JBParser extends Parser {
         for (JailAction act : damage) {
             print("\nSpectator Exploiters");
             print(act.simplify() + " as a spectator");
+        }
+    }
+
+    /**
+     * Checks is a CT killed an ST
+     */
+    private void checkST() {
+        List<JailAction> kills = jbActions.stream()
+                .filter(act -> act.getType() == GenericActionType.KILL && act.getTargetRole() == JailRole.ST
+                        && act.getPlayerRole().isCT())
+                .collect(Collectors.toList());
+        if (kills.isEmpty())
+            return;
+        for (JailAction kill : kills) {
+            print("\nST Kills");
+            print(kill.simplify());
         }
     }
 
