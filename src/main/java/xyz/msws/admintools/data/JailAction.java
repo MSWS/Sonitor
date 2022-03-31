@@ -75,6 +75,8 @@ public class JailAction implements Comparable<JailAction> {
             return JailActionType.KILL;
         } else if (line.contains("dropped the weapon")) {
             return JailActionType.DROP_WEAPON;
+        } else if (line.contains(" picked up ")) {
+            return JailActionType.PICKUP;
         } else if (line.endsWith("has been fired by an admin")) {
             return JailActionType.FIRE;
         } else if (line.endsWith("has passed warden")) {
@@ -156,13 +158,31 @@ public class JailAction implements Comparable<JailAction> {
     }
 
     private String[] findOther() {
-        switch (type) {
-            case KILL:
-                return new String[]{targetRole.getIcon()};
-            case DAMAGE:
-                return new String[]{line.substring(line.lastIndexOf("with ") + "with ".length(), line.lastIndexOf("damage") - 1), line.substring(line.lastIndexOf("(") + 1, line.length() - 1)};
+        if (type instanceof GenericActionType gType) {
+            switch (gType) {
+                case KILL:
+                    return new String[] { targetRole.getIcon() };
+                case DAMAGE:
+                    return new String[] {
+                            targetRole.getIcon(),
+                            line.substring(line.lastIndexOf("with ") + "with ".length(),
+                                    line.lastIndexOf("damage") - 1),
+                            line.substring(line.lastIndexOf("(") + 1, line.length() - 1) };
+                case NADE:
+                    return new String[] { line.substring(line.lastIndexOf(" ") + 1) };
+                default:
+                    return new String[] {};
+            }
+        }
+        if (!(type instanceof JailActionType jbType))
+            return new String[] { "Invalid Type" };
+        String name, weapon;
+        switch (jbType) {
             case BUTTON:
-                String name = line.substring(line.substring(0, line.length() - 1).lastIndexOf(line.contains("pressed button 'Unknown'") ? "(" : "'", line.length() - 2) + 1, line.length() - 1);
+                name = line.substring(
+                        line.substring(0, line.length() - 1).lastIndexOf(
+                                line.contains("pressed button 'Unknown'") ? "(" : "'", line.length() - 2) + 1,
+                        line.length() - 1);
                 Button b = ButtonDatabase.getInstance().getButton(name);
                 return new String[]{b.getName(), b.getAlias()};
             case DROP_WEAPON:
@@ -170,11 +190,18 @@ public class JailAction implements Comparable<JailAction> {
             case NADE:
                 return new String[]{line.substring(line.lastIndexOf(" ") + 1)};
             case RESKIN:
-                String weapon = line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(), line.indexOf(" ", line.lastIndexOf("weapon_")));
+                weapon = line.substring(line.indexOf("reskinned weapon_") + "reskinned weapon_".length(),
+                        line.indexOf(" ", line.lastIndexOf("weapon_")));
                 if (line.endsWith("(not previously owned)")) {
                     return new String[]{weapon, "their own"};
                 }
-                return new String[]{weapon, line.substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1)};
+                return new String[] { weapon, line
+                        .substring(line.indexOf("previous owner: ") + "previous owner: ".length(), line.length() - 1) };
+            case PICKUP:
+                name = line.substring(line.indexOf("picked up ") + "picked up ".length(),
+                        line.lastIndexOf("'s "));
+                weapon = line.substring(line.lastIndexOf(" ") + 1, line.length() - 1);
+                return new String[] { name, weapon };
             default:
                 return new String[]{};
         }

@@ -5,6 +5,22 @@ public class DataStructs {
         String getSummary(String... opts);
     }
 
+    public static enum GenericActionType implements ActionType {
+        DAMAGE("damaged %s (%s) for %s"), KILL("killed %s (%s)"), NADE("threw a %s"), GHOST_RESPAWN("respawned as ghost");
+
+        String sum;
+
+        GenericActionType(String summary) {
+            this.sum = summary;
+        }
+
+        @Override
+        public String getSummary(String... opts) {
+            return String.format(sum, (Object[]) opts);
+        }
+
+    }
+
     public static interface Role {
         String getIcon();
 
