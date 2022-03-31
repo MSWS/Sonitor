@@ -1,4 +1,4 @@
-package xyz.msws.admintools.data;
+package xyz.msws.admintools.data.jb;
 
 import xyz.msws.admintools.data.DataStructs.Role;
 

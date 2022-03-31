@@ -32,7 +32,7 @@ public class JBParser extends Parser {
     private final Pattern pattern = Pattern.compile("^\\[\\d\\d:\\d\\d]\s"); // Matches the timecode prefix of jailbreak
                                                                              // logs
 
-    boolean parse = false;
+    private boolean parse = false;
 
     public JBParser(Monitor monitor) {
         super(monitor);
@@ -111,7 +111,9 @@ public class JBParser extends Parser {
                 .collect(Collectors.toList());
         TreeMap<Long, Boolean> cease = new TreeMap<>();
         for (JailAction act : allWarden) {
-            switch (act.getType()) {
+            if (!(act.getType() instanceof JailActionType jbType))
+                continue;
+            switch (jbType) {
                 case WARDEN -> cease.put(act.getTime() + config.getWardenTimeout(), false);
                 case WARDEN_DEATH -> cease.put(act.getTime(), true);
                 case FIRE, PASS -> {
@@ -137,7 +139,7 @@ public class JBParser extends Parser {
             if (act.getTargetRole() != null && act.getTargetRole().isCT())
                 cts.add(act.getTarget());
         }
-        List<JailAction> deaths = jbActions.stream().filter(act -> act.getType() == JailActionType.KILL)
+        List<JailAction> deaths = jbActions.stream().filter(act -> act.getType() == GenericActionType.KILL)
                 .collect(Collectors.toList());
         if (!deaths.isEmpty()) {
             boolean ctWin = deaths.get(deaths.size() - 1).getPlayerRole().isCT();
@@ -168,7 +170,7 @@ public class JBParser extends Parser {
         }
 
         List<JailAction> badCombat = jbActions.stream()
-                .filter(act -> act.getType() == JailActionType.DAMAGE || act.getType() == JailActionType.KILL)
+                .filter(act -> act.getType() == GenericActionType.DAMAGE || act.getType() == GenericActionType.KILL)
                 .filter(act -> act.getPlayerRole().isCT()).filter(act -> act.getTargetRole() == JailRole.PRISONER)
                 .filter(act -> ceaseFire(cease, act.getTime())).collect(Collectors.toList());
 
@@ -254,7 +256,7 @@ public class JBParser extends Parser {
      * soon after
      */
     private void checkNades() {
-        List<JailAction> nades = jbActions.stream().filter(act -> act.getType() == JailActionType.NADE)
+        List<JailAction> nades = jbActions.stream().filter(act -> act.getType() == GenericActionType.NADE)
                 .collect(Collectors.toList());
 
         for (JailAction act : jbActions.stream().filter(act -> act.getPlayerRole() == JailRole.WORLD)
@@ -310,7 +312,7 @@ public class JBParser extends Parser {
      */
     private void checkSpectator() {
         List<JailAction> damage = jbActions.stream()
-                .filter(act -> act.getType() == JailActionType.DAMAGE || act.getType() == JailActionType.KILL)
+                .filter(act -> act.getType() == GenericActionType.DAMAGE || act.getType() == GenericActionType.KILL)
                 .filter(act -> act.getPlayerRole() == JailRole.SPECTATOR).collect(Collectors.toList());
         for (JailAction act : damage) {
             print("\nSpectator Exploiters");

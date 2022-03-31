@@ -1,5 +1,9 @@
 package xyz.msws.admintools.data;
 
+import xyz.msws.admintools.data.DataStructs.ActionType;
+import xyz.msws.admintools.data.DataStructs.GenericActionType;
+import xyz.msws.admintools.data.jb.JailActionType;
+import xyz.msws.admintools.data.ttt.TTTActionType;
 import xyz.msws.admintools.utils.Convert;
 import xyz.msws.admintools.utils.Utils;
 
@@ -52,8 +56,26 @@ public class FileConfig extends Config {
             } else if (line.startsWith("showTypes=")) {
                 String[] acts = getValue(line, "showTypes=").split(",");
                 actions.clear();
-                for (String s : acts)
-                    actions.add(JailActionType.valueOf(s.toUpperCase()));
+                for (String s : acts) {
+                    ActionType type = null;
+                    try {
+                        type = GenericActionType.valueOf(s.toUpperCase());
+                    } catch (IllegalArgumentException e1) {
+                        try {
+                            type = JailActionType.valueOf(s.toUpperCase());
+                        } catch (IllegalArgumentException e2) {
+                            try {
+                                type = TTTActionType.valueOf(s.toUpperCase());
+                            } catch (IllegalArgumentException e3) {
+                            }
+                        }
+                    }
+                    if (type == null) {
+                        System.out.println("Invalid action type: " + s);
+                        continue;
+                    }
+                    actions.add(type);
+                }
             } else if (line.startsWith("gundropTimeout=")) {
                 gunTimeout = getValue(line, "gundropTimeout=", Integer.class);
             } else if (line.startsWith("nadeTimeout=")) {
@@ -76,6 +98,8 @@ public class FileConfig extends Config {
                 freeTime = getValue(line, "freeTime=", Integer.class);
             } else if (line.startsWith("doJailbreak=")) {
                 doJailbreak = getValue(line, "doJailbreak=", Boolean.class);
+            } else if (line.startsWith("doTTT=")) {
+                doTTT = getValue(line, "doTTT=", Boolean.class);
             } else if (line.startsWith("cacheGametimes=")) {
                 cacheGametimes = getValue(line, "cacheGametimes=", Boolean.class);
             } else if (line.startsWith("requestGametimes=")) {

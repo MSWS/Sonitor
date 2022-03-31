@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import xyz.msws.admintools.data.DataStructs.ActionType;
 import xyz.msws.admintools.data.DataStructs.Role;
+import xyz.msws.admintools.data.jb.JailRole;
 
 /**
  * Represents a line in Jailbreak Logs
@@ -25,11 +26,11 @@ public abstract class Action implements Comparable<Action> {
     protected String[] other;
     protected String line;
 
-    int playerRoleStart = Integer.MAX_VALUE, playerRoleEnd, targetRoleStart = -1, targetRoleEnd = -1;
-    int playerStart, playerEnd;
-    int targetStart, targetEnd;
+    protected int playerRoleStart = Integer.MAX_VALUE, playerRoleEnd, targetRoleStart = -1, targetRoleEnd = -1;
+    protected int playerStart, playerEnd;
+    protected int targetStart, targetEnd;
 
-    long time;
+    protected long time;
 
     public Action(String line) {
         this.line = line;
@@ -45,7 +46,7 @@ public abstract class Action implements Comparable<Action> {
 
     public String simplify() {
         String[] opts;
-        if (target.isEmpty()) {
+        if (target == null || target.isEmpty()) {
             opts = other;
         } else {
             List<String> s = new ArrayList<>();
@@ -68,7 +69,7 @@ public abstract class Action implements Comparable<Action> {
     }
 
     @Override
-    public int compareTo(JailAction o) {
+    public int compareTo(Action o) {
         return (int) (this.getTime() - o.getTime());
     }
 }
